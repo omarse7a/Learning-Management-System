@@ -1,4 +1,4 @@
-package com.dev.LMS.UserManagement;
+package com.dev.LMS.model;
 
 public enum Role {
     ADMIN,

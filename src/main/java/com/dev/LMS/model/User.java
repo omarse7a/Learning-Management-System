@@ -1,4 +1,4 @@
-package com.dev.LMS.UserManagement;
+package com.dev.LMS.model;
 
 import jakarta.persistence.*;
 import java.util.Objects;

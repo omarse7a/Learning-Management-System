@@ -1,5 +1,7 @@
-package com.dev.LMS.UserManagement;
+package com.dev.LMS.controller;
 
+import com.dev.LMS.model.User;
+import com.dev.LMS.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

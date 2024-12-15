@@ -1,5 +1,7 @@
-package com.dev.LMS.UserManagement;
+package com.dev.LMS.service;
 
+import com.dev.LMS.model.User;
+import com.dev.LMS.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
