@@ -4,3 +4,8 @@ server:
 spring:
   main:
     web-application-type: servlet
+  datasource:
+    url: jdbc:postgresql://localhost:5432/LMS
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
