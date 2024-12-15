@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -25,6 +27,11 @@ public class Course {
     @JoinColumn(name = "instructor_id", nullable = false)
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private User instructor;
+
+    @ManyToMany
+    @JoinColumn(name= "enrolled_students")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    private List<User> enrolledStudents;
 
     public Course() {}
 
