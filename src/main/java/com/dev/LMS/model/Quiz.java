@@ -15,10 +15,10 @@ public class Quiz {
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long quizID;
     @ManyToOne
-    @JoinColumn(name= "course")
+    @JoinColumn(name= "course_id")
     private Course courseId;
     @ManyToOne
-    @JoinColumn(name= "user")
+    @JoinColumn(name= "user_id")
     private User userId;
     @Column(nullable = false, unique = true)
     private String quizTitle;
@@ -26,7 +26,7 @@ public class Quiz {
     private Time quizDuration;
     @OneToMany(mappedBy ="quiz" )
     private List<Question> questions = new ArrayList<>();
-    @OneToMany(mappedBy ="questions_answers" )
+    @OneToMany(mappedBy ="quiz" )
     private List<SubmittedQuestion> submittedQuestions = new ArrayList<>();
 
     public List<SubmittedQuestion> getSubmittedQuestions() {
