@@ -107,15 +107,4 @@ public class Course {
                 ", instructor_id=" + instructor +
                 '}';
     }
-
-    @OneToMany(mappedBy = "course")
-    private Collection<Question> course;
-
-    public Collection<Question> getCourse() {
-        return course;
-    }
-
-    public void setCourse(Collection<Question> course) {
-        this.course = course;
-    }
 }
