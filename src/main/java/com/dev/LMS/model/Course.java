@@ -1,10 +1,12 @@
 package com.dev.LMS.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
+import java.util.*;
 
 @Entity
 public class Course {
@@ -25,6 +27,22 @@ public class Course {
     @JoinColumn(name = "instructor_id", nullable = false)
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private User instructor;
+
+
+    //Lessons
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "course_id")
+    @JsonManagedReference
+    private List<Lesson> lesson = new ArrayList<>();
+
+    //Attendance List
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinTable(
+            name = "enrolled studentes",
+            joinColumns = @JoinColumn(name = "course_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private Set<User> enrolled_students = new HashSet<>();
 
     public Course() {}
 
@@ -89,6 +107,46 @@ public class Course {
                 ", description='" + description + '\'' +
                 ", duration=" + duration +
                 ", instructor_id=" + instructor +
-                '}';
+                '}' +
+                ", Number of Lessons= " + lesson.size()
+                ;
+    }
+
+
+
+    //for lessons
+    public List<Lesson> getLesson() {
+        return lesson;
+    }
+
+    public void setLesson(List<Lesson> lesson) {
+        this.lesson = lesson;
+    }
+
+    public void addLesson(Lesson lesson) {
+        if (this.lesson == null) {
+            this.lesson = new ArrayList<>();
+        }
+        this.lesson.add(lesson);
+        lesson.setCourse(this);
+    }
+
+    public void removeLesson(Lesson lesson) {
+        this.lesson.remove(lesson);
+        lesson.setCourse(null);
+    }
+
+    //for enrolled students
+    public void setEnrolled_students(Set<User> enrolled_students) {
+        this.enrolled_students = enrolled_students;
+    }
+
+    public void addStudent(@NotNull User user) {
+        if (user.getRole() == Role.STUDENT) {
+            this.enrolled_students.add(user);
+        }
+        else {
+            throw new IllegalArgumentException("Only students can enroll in courses");
+        }
     }
 }
