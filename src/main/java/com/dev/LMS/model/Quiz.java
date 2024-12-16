@@ -29,6 +29,13 @@ public class Quiz {
     @OneToMany(mappedBy ="questions_answers" )
     private List<SubmittedQuestion> submittedQuestions = new ArrayList<>();
 
+    public List<SubmittedQuestion> getSubmittedQuestions() {
+        return submittedQuestions;
+    }
+
+    public void setSubmittedQuestions(List<SubmittedQuestion> submittedQuestions) {
+        this.submittedQuestions = submittedQuestions;
+    }
 
     public Long getQuizID() {
         return quizID;
