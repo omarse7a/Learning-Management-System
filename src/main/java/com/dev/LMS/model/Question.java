@@ -30,7 +30,10 @@ public class Question {
     @JoinColumn(name = "course_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Course course;
-
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
+    private List<SubmittedQuestion> submittedQuestions = new ArrayList<>();
+    @ManyToOne
+    private Quiz quiz;
     public Question() {
     }
 

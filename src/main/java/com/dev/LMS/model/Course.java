@@ -10,7 +10,7 @@ import java.util.*;
 public class Course {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private long courseId;
 
     @Column(unique=true, nullable=false)
     private String name;
@@ -36,12 +36,12 @@ public class Course {
 
     public Course() {}
 
-    public long getId() {
-        return id;
+    public long getCourseId() {
+        return courseId;
     }
 
-    public void setId(Long id) {
-       this.id = id ;
+    public void setCourseId(Long id) {
+       this.courseId = id ;
     }
 
     public String getName() {
@@ -89,22 +89,33 @@ public class Course {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Course course = (Course) o;
-        return id == course.id && Objects.equals(name, course.name) && Objects.equals(description, course.description) && Objects.equals(duration, course.duration) && Objects.equals(instructor, course.instructor);
+        return courseId == course.courseId && Objects.equals(name, course.name) && Objects.equals(description, course.description) && Objects.equals(duration, course.duration) && Objects.equals(instructor, course.instructor);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, duration, instructor);
+        return Objects.hash(courseId, name, description, duration, instructor);
     }
 
     @Override
     public String toString() {
         return "Course{" +
-                "id=" + id +
+                "id=" + courseId +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", duration=" + duration +
                 ", instructor_id=" + instructor +
                 '}';
+    }
+
+    @OneToMany(mappedBy = "course")
+    private Collection<Question> course;
+
+    public Collection<Question> getCourse() {
+        return course;
+    }
+
+    public void setCourse(Collection<Question> course) {
+        this.course = course;
     }
 }
