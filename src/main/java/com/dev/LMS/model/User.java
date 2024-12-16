@@ -28,7 +28,8 @@ public class User {
 
     @ManyToMany(mappedBy = "enrolled_students")
     private Set<Course> enrolled_courses = new HashSet<>();
-
+    @OneToMany(mappedBy = "user")
+    private List<AssignmentSub> assignmentSubs;
     public User() {
     }
 
