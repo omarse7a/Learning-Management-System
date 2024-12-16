@@ -1,7 +1,11 @@
 package com.dev.LMS.model;
 
 import jakarta.persistence.*;
+
+import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -21,6 +25,9 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
+
+    @ManyToMany(mappedBy = "enrolled_students")
+    private Set<Course> enrolled_courses = new HashSet<>();
 
     public User() {
     }

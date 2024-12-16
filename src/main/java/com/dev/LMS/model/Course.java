@@ -4,9 +4,7 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Entity
 public class Course {
@@ -24,14 +22,17 @@ public class Course {
     private Float duration;    // completion hours
 
     @ManyToOne
-    @JoinColumn(name = "instructor_id", nullable = false)
+    @JoinColumn(name = "instructor_id")
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private User instructor;
 
     @ManyToMany
-    @JoinColumn(name= "enrolled_students")
-    @OnDelete(action = OnDeleteAction.SET_NULL)
-    private List<User> enrolledStudents;
+    @JoinTable(
+            name = "student_course", // Join table name
+            joinColumns = @JoinColumn(name = "student_id"), // Foreign key for Student
+            inverseJoinColumns = @JoinColumn(name = "course_id") // Foreign key for Course
+    )
+    private Set<User> enrolled_students = new HashSet<>();
 
     public Course() {}
 
@@ -67,12 +68,20 @@ public class Course {
         this.duration = duration;
     }
 
-    public User getInstructor_id() {
+    public User getInstructor() {
         return instructor;
     }
 
-    public void setInstructor_id(User instructor_id) {
-        this.instructor = instructor_id;
+    public void setInstructor(User instructor) {
+        this.instructor = instructor;
+    }
+
+    public Set<User> getEnrolled_students() {
+        return enrolled_students;
+    }
+
+    public void setEnrolled_students(Set<User> enrolled_students) {
+        this.enrolled_students = enrolled_students;
     }
 
     @Override
