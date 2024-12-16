@@ -1,7 +1,10 @@
 package com.dev.LMS.model;
 
 import jakarta.persistence.*;
+
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -21,6 +24,14 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
+
+    //lesson
+    @ManyToMany(mappedBy = "attendees")
+    private Set<Lesson> lessonAttended = new HashSet<>();
+
+    //courses
+    @ManyToMany(mappedBy = "enrolled_students")
+    private Set<Course> enrolled_courses = new HashSet<>();
 
     public User() {
     }
@@ -96,4 +107,33 @@ public class User {
                 ", role=" + role +
                 '}';
     }
+
+
+
+    //for attending lesson (student)
+    public void setLessonAttended(Set<Lesson> lessonAttended) {
+        this.lessonAttended = lessonAttended;
+    }
+    public Set<Lesson> getLessonAttended() {
+        return lessonAttended;
+    }
+
+    public void attendLesson(Lesson lesson) {
+        this.lessonAttended.add(lesson);
+    }
+
+
+    //for enrolled course (student)
+    public void setEnrolled_courses(Set<Course> enrolled_courses) {
+        this.enrolled_courses = enrolled_courses;
+    }
+
+    public Set<Course> getEnrolled_courses() {
+        return enrolled_courses;
+    }
+    public void enrollCourse(Course course) {
+        this.enrolled_courses.add(course);
+    }
+
+
 }
