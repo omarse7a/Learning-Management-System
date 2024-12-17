@@ -1,33 +1,40 @@
 package com.dev.LMS.controller;
 
+import com.dev.LMS.dto.UserLoginDto;
 import com.dev.LMS.model.User;
 import com.dev.LMS.service.UserService;
+import com.dev.LMS.util.UserFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import com.dev.LMS.dto.RegisterDto;
 
 import java.util.HashMap;
 import java.util.Map;
+import javax.validation.Valid;
 
 @RestController
 public class AuthController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private UserFactory userFactory;
+
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+
     @PostMapping("/register")
-    public ResponseEntity<Map<String, String>> register(@RequestBody User user) {
+    public ResponseEntity<Map<String, String>> register(@Valid @RequestBody RegisterDto registerDto) {
         Map<String, String> response = new HashMap<>();
         try {
-            if (user.getEmail() == null || user.getPassword() == null || user.getId() == null) {
-                response.put("message", "Email and password are required.");
-                return ResponseEntity.badRequest().body(response);
-            }
-            if (user.getPassword().length() < 8) {
-                response.put("message", "Password must be at least 8 characters long.");
-                return ResponseEntity.badRequest().body(response);
-            }
+            User user = userFactory.createUser(registerDto.getRole(), registerDto.getName(), registerDto.getEmail());
+            user.setPassword(registerDto.getPassword());
+
+
             userService.register(user);
             response.put("message", "User registered successfully");
             return ResponseEntity.ok(response);
@@ -38,8 +45,10 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(@RequestBody User user) {
+    public ResponseEntity<Map<String, String>> login(@RequestBody UserLoginDto userdto) {
         Map<String, String> response = new HashMap<>();
+        User user = userFactory.tempLoginUser(userdto.getRole(), userdto.getEmail());
+        user.setPassword(userdto.getPassword());
         try {
             if (user.getEmail() == null || user.getPassword() == null) {
                 response.put("message", "Email and password are required.");

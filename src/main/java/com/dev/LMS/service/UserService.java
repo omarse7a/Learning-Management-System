@@ -1,5 +1,6 @@
 package com.dev.LMS.service;
 
+import com.dev.LMS.dto.UpdateProfileDto;
 import com.dev.LMS.model.User;
 import com.dev.LMS.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +24,6 @@ public class UserService {
             throw new RuntimeException("User with this email already exists.");
         }
 
-        if (!userRepo.findById(user.getId()).isEmpty()) {
-            throw new RuntimeException("User with this id already exists.");
-        }
-
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         userRepo.save(user);
@@ -40,7 +37,7 @@ public class UserService {
             throw new RuntimeException("Invalid email or password.");
         }
 
-        String token = jwtUtil.generateToken(user.getEmail());
+        String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
         return token;
     }
 
@@ -49,13 +46,13 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
     }
 
-    public User updateUser(String email, User user) {
+    public User updateUser(String email, UpdateProfileDto updateProfileDto) {
         User existingUser = userRepo.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
 
-        existingUser.setName(user.getName());
-        existingUser.setEmail(user.getEmail());
-        existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
+        existingUser.setName(updateProfileDto.getName());
+        existingUser.setEmail(updateProfileDto.getEmail());
+        existingUser.setPassword(passwordEncoder.encode(updateProfileDto.getPassword()));
 
         return userRepo.save(existingUser);
     }

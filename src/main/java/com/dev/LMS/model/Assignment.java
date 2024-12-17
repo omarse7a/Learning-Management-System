@@ -29,7 +29,7 @@ public class Assignment {
     private Course course;
     @OneToOne
     @JoinColumn(name = "assginment_id", nullable = false)
-    private AssignmentSub assignmentSub;
+    private AssignmentSubmisson assignmentSub;
 
     public Long getAssignmentId() {
         return assignment_id;

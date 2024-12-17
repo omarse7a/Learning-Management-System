@@ -2,34 +2,41 @@ package com.dev.LMS.model;
 
 import jakarta.persistence.*;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
+
 
 @Entity
 @Table(name = "users")
-public class User {
-    @Id
-    private Long id;
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 
-    @Column(nullable = false, unique = true)
+public abstract class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "user_id")
+    private int id;
+
+    @Column(nullable = false, unique = false)
     private String name;
 
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(name = "password", nullable = false, length = 255)
+    @Column(name = "password", length = 255)
     private String password;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
 
+
     @ManyToMany(mappedBy = "enrolled_students")
     private Set<Course> enrolled_courses = new HashSet<>();
+
+
     @OneToMany(mappedBy = "user")
-    private List<AssignmentSub> assignmentSubs;
+    private List<AssignmentSubmisson> assignmentSubs;
+
     public User() {
     }
 
@@ -39,11 +46,12 @@ public class User {
         this.role = role;
     }
 
-    public Long getId() {
+
+    public int getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -104,4 +112,10 @@ public class User {
                 ", role=" + role +
                 '}';
     }
+
+
+
+
+
+
 }
