@@ -39,7 +39,7 @@ public class Course {
     //Attendance List
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinTable(
-            name = "enrolled studentes",
+            name = "enrolled_students",
             joinColumns = @JoinColumn(name = "course_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
 
@@ -52,7 +52,7 @@ public class Course {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
        this.id = id ;
     }
 

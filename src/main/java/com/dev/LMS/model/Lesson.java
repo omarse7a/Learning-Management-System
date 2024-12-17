@@ -108,12 +108,8 @@ public class Lesson {
     }
 
     public void addAttendee(@org.jetbrains.annotations.NotNull User user) {
-        if (user.getRole() == Role.STUDENT) {
             this.attendees.add(user);
-        }
-        else {
-            throw new IllegalArgumentException("Only students can attend lessons");
-        }
+
     }
 
 

@@ -2,6 +2,7 @@ package com.dev.LMS.controller;
 
 import com.dev.LMS.model.User;
 import com.dev.LMS.service.UserService;
+import com.dev.LMS.util.UserFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,21 +19,17 @@ public class AuthController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private UserFactory userFactory;
+
     @PostMapping("/register")
     public ResponseEntity<Map<String, String>> register(@Valid @RequestBody RegisterRequest registerRequest) {
         Map<String, String> response = new HashMap<>();
         try {
-            User user = new User();
-            user.setName(registerRequest.getName());
-            user.setEmail(registerRequest.getEmail());
+            User user = userFactory.createUser(registerRequest.getRole(), registerRequest.getName(), registerRequest.getEmail());
             user.setPassword(registerRequest.getPassword());
-            try {
-                user.setRole(Role.valueOf(registerRequest.getRole().toUpperCase()));
-            } catch (IllegalArgumentException e) {
-                response.put("message", "Invalid role. Must be one of: ADMIN, INSTRUCTOR, STUDENT");
-                return ResponseEntity.badRequest().body(response);
-            }
 
+            user.setId(99);
             userService.register(user);
             response.put("message", "User registered successfully");
             return ResponseEntity.ok(response);
