@@ -92,9 +92,7 @@ public class Course {
         return enrolled_students;
     }
 
-    public void setEnrolled_students(Set<User> enrolled_students) {
-        this.enrolled_students = enrolled_students;
-    }
+
 
     @Override
     public boolean equals(Object o) {
