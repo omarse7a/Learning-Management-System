@@ -24,9 +24,10 @@ public class Course {
     private Float duration;    // completion hours
 
     @ManyToOne
-    @JoinColumn(name = "instructor_id", nullable = false)
+    @JoinColumn(name = "instructor_id")
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private User instructor;
+
 
 
     //Lessons
@@ -41,6 +42,7 @@ public class Course {
             name = "enrolled studentes",
             joinColumns = @JoinColumn(name = "course_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
+
     )
     private Set<User> enrolled_students = new HashSet<>();
 
@@ -78,12 +80,20 @@ public class Course {
         this.duration = duration;
     }
 
-    public User getInstructor_id() {
+    public User getInstructor() {
         return instructor;
     }
 
-    public void setInstructor_id(User instructor_id) {
-        this.instructor = instructor_id;
+    public void setInstructor(User instructor) {
+        this.instructor = instructor;
+    }
+
+    public Set<User> getEnrolled_students() {
+        return enrolled_students;
+    }
+
+    public void setEnrolled_students(Set<User> enrolled_students) {
+        this.enrolled_students = enrolled_students;
     }
 
     @Override
