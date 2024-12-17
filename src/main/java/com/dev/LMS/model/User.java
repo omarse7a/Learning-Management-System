@@ -3,6 +3,10 @@ package com.dev.LMS.model;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
+
+import java.util.List;
+
+
 import java.util.Objects;
 import java.util.Set;
 
@@ -10,9 +14,10 @@ import java.util.Set;
 @Table(name = "users")
 public class User {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = false)
     private String name;
 
     @Column(nullable = false, unique = true)
@@ -25,11 +30,14 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
+
+
     //lesson
     @ManyToMany(mappedBy = "attendees")
     private Set<Lesson> lessonAttended = new HashSet<>();
 
     //courses
+
     @ManyToMany(mappedBy = "enrolled_students")
     private Set<Course> enrolled_courses = new HashSet<>();
 
