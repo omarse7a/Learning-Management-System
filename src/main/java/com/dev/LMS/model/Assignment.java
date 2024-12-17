@@ -27,6 +27,9 @@ public class Assignment {
     @JoinColumn(name = "course_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Course course;
+    @OneToOne
+    @JoinColumn(name = "assginment_id", nullable = false)
+    private AssignmentSubmisson assignmentSub;
 
     public Long getAssignmentId() {
         return assignment_id;

@@ -1,6 +1,8 @@
 package com.dev.LMS.model;
 
 import jakarta.persistence.*;
+
+import java.util.List;
 import java.util.Objects;
 
 
@@ -26,6 +28,8 @@ public abstract class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
+    @OneToMany(mappedBy = "user")
+    private List<AssignmentSubmisson> assignmentSubs;
 
     public User() {
     }
