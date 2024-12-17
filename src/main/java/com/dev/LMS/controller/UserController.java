@@ -1,5 +1,7 @@
 package com.dev.LMS.controller;
 
+import com.dev.LMS.dto.UpdateProfileDto;
+import com.dev.LMS.dto.UserLoginDto;
 import com.dev.LMS.model.User;
 import com.dev.LMS.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,9 +25,10 @@ public class UserController {
     }
 
     @PutMapping("/profile")
-    public ResponseEntity<User> updateUserProfile(@RequestBody User user) {
+    public ResponseEntity<User> updateUserProfile(@RequestBody UpdateProfileDto updateProfileDto) {
+
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User updatedUser = userService.updateUser(email, user);
+        User updatedUser = userService.updateUser(email, updateProfileDto);
         return ResponseEntity.ok(updatedUser);
     }
 }

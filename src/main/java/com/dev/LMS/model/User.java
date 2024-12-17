@@ -1,21 +1,16 @@
 package com.dev.LMS.model;
 
 import jakarta.persistence.*;
-
-import java.util.HashSet;
-
-import java.util.List;
-
-
 import java.util.Objects;
-import java.util.Set;
+
 
 @Entity
 @Table(name = "users")
-@Inheritance(strategy = InheritanceType.JOINED)
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+
 public abstract class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "user_id")
     private int id;
 

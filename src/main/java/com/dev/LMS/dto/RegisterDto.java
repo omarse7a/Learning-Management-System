@@ -4,7 +4,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.Size;
 
-public class RegisterRequest {
+public class RegisterDto {
     @NotNull(message = "Name is required")
     private String name;
 

@@ -22,6 +22,20 @@ public class UserFactory {
             case ADMIN -> new Admin(name, email);
             default -> throw new RuntimeException("Unsupported role.");
         };
+    }
 
+    public User tempLoginUser(String role, String email) {
+        Role userRole;
+        try{
+            userRole = Role.valueOf(role.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid role. Must be one of: ADMIN, INSTRUCTOR, STUDENT");
+        }
+        return switch (userRole) {
+            case STUDENT -> new Student("temp", email);
+            case INSTRUCTOR -> new Instructor("temp", email);
+            case ADMIN -> new Admin("temp", email);
+            default -> throw new RuntimeException("Unsupported role.");
+        };
     }
 }
