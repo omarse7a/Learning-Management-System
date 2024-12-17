@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import com.dev.LMS.model.Role;
 
 @Component
 public class JwtUtil {
@@ -18,6 +19,10 @@ public class JwtUtil {
 
     public String extractEmail(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+    public String extractRole(String token) {
+        return (String) extractClaim(token, claims -> claims.get("role"));
     }
 
     public Date extractExpiration(String token) {
@@ -37,8 +42,9 @@ public class JwtUtil {
         return extractExpiration(token).before(new Date());
     }
 
-    public String generateToken(String email) {
+    public String generateToken(String email, Role role) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("role", role.toString());
         return createToken(claims, email);
     }
 

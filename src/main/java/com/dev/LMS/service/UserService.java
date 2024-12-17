@@ -23,10 +23,6 @@ public class UserService {
             throw new RuntimeException("User with this email already exists.");
         }
 
-        if (!userRepo.findById(user.getId()).isEmpty()) {
-            throw new RuntimeException("User with this id already exists.");
-        }
-
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         userRepo.save(user);
@@ -40,7 +36,7 @@ public class UserService {
             throw new RuntimeException("Invalid email or password.");
         }
 
-        String token = jwtUtil.generateToken(user.getEmail());
+        String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
         return token;
     }
 
