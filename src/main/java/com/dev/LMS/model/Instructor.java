@@ -29,5 +29,6 @@ public class Instructor extends User {
 
     public void createCourse(Course course) {
         this.createdCourses.add(course);
+        course.setInstructor(this);
     }
 }

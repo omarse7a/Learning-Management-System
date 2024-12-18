@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 
 import java.util.ArrayList;
@@ -44,7 +45,7 @@ public class Lesson {
             joinColumns = @JoinColumn(name = "lesson_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private Set<User> attendees = new HashSet<>();
+    private Set<Student> attendees = new HashSet<>();
 
     public Lesson() {}
 
@@ -99,17 +100,16 @@ public class Lesson {
 
 
     //for students
-    public Set<User> getAttendees() {
+    public Set<Student> getAttendees() {
         return attendees;
     }
 
-    public void setAttendees(Set<User> attendees) {
+    public void setAttendees(Set<Student> attendees) {
         this.attendees = attendees;
     }
 
-    public void addAttendee(@org.jetbrains.annotations.NotNull User user) {
+    public void addAttendee(@NotNull Student user) {
             this.attendees.add(user);
-
     }
 
 

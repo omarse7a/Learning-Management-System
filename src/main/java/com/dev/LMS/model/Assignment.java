@@ -1,10 +1,13 @@
 package com.dev.LMS.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -13,23 +16,24 @@ public class Assignment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long assignment_id;
 
-    @Column(nullable = false)
+    @Column
     private String title;
 
     @Lob
-    @Column(nullable = false)
+    @Column
     private String description;
 
-    @Column(nullable = false)
+    @Column
     private LocalDateTime dueDate;
 
     @ManyToOne
     @JoinColumn(name = "course_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Course course;
-    @OneToOne
-    @JoinColumn(name = "assginment_id", nullable = false)
-    private AssignmentSubmisson assignmentSub;
+
+    @OneToMany(mappedBy = "assignment", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<AssignmentSubmisson> submissions = new ArrayList<>();
 
     public Long getAssignmentId() {
         return assignment_id;
@@ -70,6 +74,15 @@ public class Assignment {
     public void setCourse(Course course) {
         this.course = course;
     }
+
+    public List<AssignmentSubmisson> getSubmissions() {
+        return submissions;
+    }
+
+    public void setSubmissions(List<AssignmentSubmisson> submissions) {
+        this.submissions = submissions;
+    }
+
 
     @Override
     public boolean equals(Object o) {

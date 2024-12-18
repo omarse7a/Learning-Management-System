@@ -36,9 +36,6 @@ public abstract class User {
     private Set<Course> enrolled_courses = new HashSet<>();
 
 
-    @OneToMany(mappedBy = "user")
-    private List<AssignmentSubmisson> assignmentSubs;
-
     public User() {
     }
 
@@ -114,10 +111,4 @@ public abstract class User {
                 ", role=" + role +
                 '}';
     }
-
-
-
-
-
-
 }

@@ -26,15 +26,13 @@ public class Course {
     @ManyToOne
     @JoinColumn(name = "instructor_id")
     @OnDelete(action = OnDeleteAction.SET_NULL)
-    private User instructor;
-
-
+    private Instructor instructor;
 
     //Lessons
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "course_id")
     @JsonManagedReference
-    private List<Lesson> lesson = new ArrayList<>();
+    private List<Lesson> lessons = new ArrayList<>();
 
     //Attendance List
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
@@ -44,7 +42,13 @@ public class Course {
             inverseJoinColumns = @JoinColumn(name = "user_id")
 
     )
-    private Set<User> enrolled_students = new HashSet<>();
+    private Set<Student> enrolled_students = new HashSet<>();
+
+    // Assignment List
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "course_id")
+    @JsonManagedReference
+    private List<Assignment> assignments = new ArrayList<>();
 
     public Course() {}
 
@@ -81,15 +85,15 @@ public class Course {
         this.duration = duration;
     }
 
-    public User getInstructor() {
+    public Instructor getInstructor() {
         return instructor;
     }
 
-    public void setInstructor(User instructor) {
+    public void setInstructor(Instructor instructor) {
         this.instructor = instructor;
     }
 
-    public Set<User> getEnrolled_students() {
+    public Set<Student> getEnrolled_students() {
         return enrolled_students;
     }
 
@@ -117,47 +121,66 @@ public class Course {
                 ", duration=" + duration +
                 ", instructor_id=" + instructor +
                 '}' +
-                ", Number of Lessons= " + lesson.size()
+                ", Number of Lessons= " + lessons.size()
                 ;
     }
 
-
-
     //for lessons
     public List<Lesson> getLesson() {
-        return lesson;
+        return lessons;
     }
-//b0517f3 CourseControllerAndService
     public void setLesson(List<Lesson> lesson) {
-        this.lesson = lesson;
+        this.lessons = lesson;
     }
 
     public void addLesson(Lesson lesson) {
-        if (this.lesson == null) {
-            this.lesson = new ArrayList<>();
+        if (this.lessons == null) {
+            this.lessons = new ArrayList<>();
         }
-        this.lesson.add(lesson);
+        this.lessons.add(lesson);
         lesson.setCourse(this);
     }
 
     public void removeLesson(Lesson lesson) {
-        this.lesson.remove(lesson);
+        this.lessons.remove(lesson);
         lesson.setCourse(null);
     }
 
     //for enrolled students
-    public void setEnrolled_students(Set<User> enrolled_students) {
+    public void setEnrolled_students(Set<Student> enrolled_students) {
         this.enrolled_students = enrolled_students;
     }
-    public void removeStudent(User user) {
+    public void removeStudent(Student user) {
         this.enrolled_students.remove(user);
     }
-    public void addStudent(@NotNull User user) {
+    public void addStudent(@NotNull Student user) {
         if (user.getRole() == Role.STUDENT) {
             this.enrolled_students.add(user);
+            user.enrollCourse(this);
         }
         else {
             throw new IllegalArgumentException("Only students can enroll in courses");
         }
+    }
+
+    //for assignments
+    public List<Assignment> getAssignments() {
+        return assignments;
+    }
+    public void setAssignments(List<Assignment> assignment_list) {
+        this.assignments = assignment_list;
+    }
+
+    public void addLesson(Assignment assignment) {
+        if (this.assignments == null) {
+            this.assignments = new ArrayList<>();
+        }
+        this.assignments.add(assignment);
+        assignment.setCourse(this);
+    }
+
+    public void removeLesson(Assignment assignment) {
+        this.assignments.remove(assignment);
+        assignment.setCourse(null);
     }
 }

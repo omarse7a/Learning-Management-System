@@ -4,18 +4,64 @@ import java.io.File;
 @Entity
 
 public class AssignmentSubmisson {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long AssignmentSubId;
-    @OneToOne
+    private Integer submission_id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assignment_id")
     private Assignment assignment;
-    @ManyToOne
-    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "student_id")
+    private Student student;
+
     @Column(name = "submission")
     private File submission;
+
     @Column(name = "grade")
     private int grade;
 
+    public AssignmentSubmisson() {
+    }
 
+    public Integer getSubmission_id() {
+        return submission_id;
+    }
+
+    public void setSubmission_id(Integer submission_id) {
+        this.submission_id = submission_id;
+    }
+
+    public Assignment getAssignment() {
+        return assignment;
+    }
+
+    public void setAssignment(Assignment assignment) {
+        this.assignment = assignment;
+    }
+
+    public Student getStudent() {
+        return student;
+    }
+
+    public void setStudent(Student student) {
+        this.student = student;
+    }
+
+    public File getSubmission() {
+        return submission;
+    }
+
+    public void setSubmission(File submission) {
+        this.submission = submission;
+    }
+
+    public int getGrade() {
+        return grade;
+    }
+
+    public void setGrade(int grade) {
+        this.grade = grade;
+    }
 }

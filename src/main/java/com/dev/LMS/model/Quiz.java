@@ -9,25 +9,34 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
- @Table(name="quiz")
+@Table(name="quiz")
 public class Quiz {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long quizID;
+
     @ManyToOne
     @JoinColumn(name= "course_id")
     private Course courseId;
+
     @ManyToOne
-    @JoinColumn(name= "user_id")
-    private User userId;
+    @JoinColumn(name= "student_id")
+    private Student student;
+
     @Column(nullable = false, unique = true)
     private String quizTitle;
+
     @Column(nullable = false)
     private Time quizDuration;
-    @OneToMany(mappedBy ="quiz" )
+
+    @ManyToMany(mappedBy = "quizzes", cascade = CascadeType.PERSIST)
     private List<Question> questions = new ArrayList<>();
-    @OneToMany(mappedBy ="quiz" )
+
+    @OneToMany(mappedBy ="quiz", cascade = CascadeType.ALL)
     private List<SubmittedQuestion> submittedQuestions = new ArrayList<>();
+
+
+
 
     public List<SubmittedQuestion> getSubmittedQuestions() {
         return submittedQuestions;
@@ -53,12 +62,12 @@ public class Quiz {
         this.courseId = courseId;
     }
 
-    public User getUserId() {
-        return userId;
+    public Student getStudent() {
+        return student;
     }
 
-    public void setUserId(User userId) {
-        this.userId = userId;
+    public void setStudent(Student user) {
+        this.student = user;
     }
 
     public String getQuizTitle() {

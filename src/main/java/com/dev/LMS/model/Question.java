@@ -30,10 +30,19 @@ public class Question {
     @JoinColumn(name = "course_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Course course;
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinTable(
+            name = "quizzes",
+            joinColumns = @JoinColumn(name = "question_id"),
+            inverseJoinColumns = @JoinColumn(name = "quiz_id")
+    )
+    private List<Quiz> quizzes;
+
+
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
     private List<SubmittedQuestion> submittedQuestions = new ArrayList<>();
-    @ManyToOne
-    private Quiz quiz;
+
     public Question() {
     }
 
@@ -83,6 +92,22 @@ public class Question {
 
     public void setCourse(Course course) {
         this.course = course;
+    }
+
+    public List<Quiz> getQuizzes() {
+        return quizzes;
+    }
+
+    public void setQuizzes(List<Quiz> quizzes) {
+        this.quizzes = quizzes;
+    }
+
+    public List<SubmittedQuestion> getSubmittedQuestions() {
+        return submittedQuestions;
+    }
+
+    public void setSubmittedQuestions(List<SubmittedQuestion> submittedQuestions) {
+        this.submittedQuestions = submittedQuestions;
     }
 
     @Override
