@@ -171,7 +171,7 @@ public class Course {
         this.assignments = assignment_list;
     }
 
-    public void addLesson(Assignment assignment) {
+    public void addAssignment(Assignment assignment) {
         if (this.assignments == null) {
             this.assignments = new ArrayList<>();
         }
@@ -179,8 +179,7 @@ public class Course {
         assignment.setCourse(this);
     }
 
-    public void removeLesson(Assignment assignment) {
-        this.assignments.remove(assignment);
-        assignment.setCourse(null);
-    }
+
+
+
 }
