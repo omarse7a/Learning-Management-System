@@ -53,8 +53,8 @@ public class Course {
     }
 
 
-    public void setId(long id) {
-       this.id = id ;
+    public void setId(long courseId) {
+        this.courseId = courseId;
     }
 
     public String getName() {
@@ -127,7 +127,7 @@ public class Course {
     public List<Lesson> getLesson() {
         return lesson;
     }
-
+//b0517f3 CourseControllerAndService
     public void setLesson(List<Lesson> lesson) {
         this.lesson = lesson;
     }
@@ -149,7 +149,9 @@ public class Course {
     public void setEnrolled_students(Set<User> enrolled_students) {
         this.enrolled_students = enrolled_students;
     }
-
+    public void removeStudent(User user) {
+        this.enrolled_students.remove(user);
+    }
     public void addStudent(@NotNull User user) {
         if (user.getRole() == Role.STUDENT) {
             this.enrolled_students.add(user);
