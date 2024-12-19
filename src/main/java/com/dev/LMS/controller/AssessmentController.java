@@ -1,5 +1,6 @@
 package com.dev.LMS.controller;
 
+import com.dev.LMS.model.Course;
 import com.dev.LMS.model.Question;
 import com.dev.LMS.model.Quiz;
 import com.dev.LMS.service.AssessmentService;
@@ -11,18 +12,16 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @Controller
-@RequestMapping("/Course/{courseId}")
 public class AssessmentController {
 
     @Autowired
     AssessmentService assessmentService;
-
-    @PostMapping("/Create Question")
-    public ResponseEntity<?> addQuestion(@PathVariable int courseId,
+    @PostMapping("/Create-Question")
+    public ResponseEntity<?> addQuestion(@RequestBody String courseName,
                                          @RequestBody Question question){
         try {
             System.out.println(question);
-            assessmentService.createQuestion(courseId,question);
+            assessmentService.createQuestion(1,question);
             return new ResponseEntity<>(HttpStatus.CREATED);
         }
         catch(Exception e){

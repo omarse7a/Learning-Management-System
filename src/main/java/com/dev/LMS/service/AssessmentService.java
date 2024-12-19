@@ -19,10 +19,15 @@ public class AssessmentService {
     }
     // no need for course so I remove it
     public Question getQuestionById(int courseId, int questionId){
-        Course course= null;
-
-        Question question = null;
-        return question;
+        Course course= courseRepositry.findById(courseId);
+        List<Question> questions = course.getQuestions();
+        for (int i = 0; i < questions.size(); i++) {
+            Question temp = questions.get(i);
+            if(temp.getId() == questionId ){
+                return temp;
+            }
+        }
+        return null;
     }
     // change parameter Course-> CourseId
     public List<Question> getQuestions(int courseId){
