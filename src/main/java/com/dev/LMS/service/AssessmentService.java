@@ -1,14 +1,24 @@
 package com.dev.LMS.service;
 
 import com.dev.LMS.model.*;
+import com.dev.LMS.repository.CourseRepositry;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class AssessmentService {
-    void createQuestion(Course course){
-
+    CourseRepositry repo;
+    void createQuestion(int courseId , QuestionType type ,List<Choice> choices, String correctAnswer ){
+        Question newQuestion = new Question();
+        Course course = repo.findById(courseId);
+        newQuestion.setChoices(choices);
+        newQuestion.setCourse(course);
+        newQuestion.setCorrectAnswer(correctAnswer);
+        newQuestion.setType(type);
+        List<Question> questions = course.getQuestions();
+        questions.add(newQuestion);
+        course.setQuestions(questions);
     }
     Question getQuestionById(Course course,int questionId){
         Question question = null;

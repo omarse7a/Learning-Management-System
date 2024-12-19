@@ -20,10 +20,10 @@ public class QuizSubmission {
     @JoinColumn(name = "student_id")
     private Student student;
 
-    @ManyToMany(mappedBy = "submission", cascade = CascadeType.PERSIST)
+    @ManyToMany(mappedBy = "submissions", cascade = CascadeType.PERSIST)
     private List<Question> questions = new ArrayList<>();
 
-    @OneToMany(mappedBy = "quiz", cascade = CascadeType.PERSIST)
+    @OneToMany(mappedBy = "submission", cascade = CascadeType.PERSIST)
     private List<SubmittedQuestion> submittedQuestions = new ArrayList<>();
 
 
