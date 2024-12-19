@@ -33,11 +33,11 @@ public class Question {
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinTable(
-            name = "quizzes",
+            name = "submissions",
             joinColumns = @JoinColumn(name = "question_id"),
-            inverseJoinColumns = @JoinColumn(name = "quiz_id")
+            inverseJoinColumns = @JoinColumn(name = "submission_id")
     )
-    private List<Quiz> quizzes;
+    private List<QuizSubmission> submissions = new ArrayList<>();
 
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
@@ -94,13 +94,6 @@ public class Question {
         this.course = course;
     }
 
-    public List<Quiz> getQuizzes() {
-        return quizzes;
-    }
-
-    public void setQuizzes(List<Quiz> quizzes) {
-        this.quizzes = quizzes;
-    }
 
     public List<SubmittedQuestion> getSubmittedQuestions() {
         return submittedQuestions;
@@ -108,6 +101,14 @@ public class Question {
 
     public void setSubmittedQuestions(List<SubmittedQuestion> submittedQuestions) {
         this.submittedQuestions = submittedQuestions;
+    }
+
+    public List<QuizSubmission> getSubmissions() {
+        return submissions;
+    }
+
+    public void setSubmissions(List<QuizSubmission> submissions) {
+        this.submissions = submissions;
     }
 
     @Override

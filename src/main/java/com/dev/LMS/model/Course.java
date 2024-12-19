@@ -46,9 +46,18 @@ public class Course {
 
     // Assignment List
     @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "course_id")
     @JsonManagedReference
     private List<Assignment> assignments = new ArrayList<>();
+
+    // Quiz List
+    @OneToMany(mappedBy = "course",cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<Quiz> quizzes = new ArrayList<>();
+
+    // Question Bank
+    @OneToMany(mappedBy = "course",cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<Question> questions = new ArrayList<>();
 
     public Course() {}
 

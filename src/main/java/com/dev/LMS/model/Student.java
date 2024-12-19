@@ -1,6 +1,5 @@
 package com.dev.LMS.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
@@ -23,10 +22,11 @@ public class Student extends User{
 
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
     @JsonManagedReference
-    private List<AssignmentSubmisson> submissions = new ArrayList<>();
+    private List<AssignmentSubmisson> AssignmentSubmissions = new ArrayList<>();
 
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
-    private List<Quiz> quizzes = new ArrayList<>();
+    @JsonManagedReference
+    private List<QuizSubmission> quizSubmissions = new ArrayList<>();
 
     public Student() {}
 
@@ -59,17 +59,24 @@ public class Student extends User{
         this.enrolled_courses.add(course);
     }
 
-    public List<AssignmentSubmisson> getSubmissions() {
-        return submissions;
+    public List<AssignmentSubmisson> getAssignmentSubmissions() {
+        return AssignmentSubmissions;
     }
 
-    public void setSubmissions(List<AssignmentSubmisson> submissions) {
-        this.submissions = submissions;
+    public void setAssignmentSubmissions(List<AssignmentSubmisson> submissions) {
+        this.AssignmentSubmissions = submissions;
     }
 
     public void addSubmission(AssignmentSubmisson submission) {
-        this.submissions.add(submission);
+        this.AssignmentSubmissions.add(submission);
         submission.setStudent(this);
     }
 
+    public List<QuizSubmission> getQuizSubmissions() {
+        return quizSubmissions;
+    }
+
+    public void setQuizSubmissions(List<QuizSubmission> quizSubmissions) {
+        this.quizSubmissions = quizSubmissions;
+    }
 }

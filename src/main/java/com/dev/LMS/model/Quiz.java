@@ -17,11 +17,7 @@ public class Quiz {
 
     @ManyToOne
     @JoinColumn(name= "course_id")
-    private Course courseId;
-
-    @ManyToOne
-    @JoinColumn(name= "student_id")
-    private Student student;
+    private Course course;
 
     @Column(nullable = false, unique = true)
     private String quizTitle;
@@ -29,22 +25,10 @@ public class Quiz {
     @Column(nullable = false)
     private Time quizDuration;
 
-    @ManyToMany(mappedBy = "quizzes", cascade = CascadeType.PERSIST)
-    private List<Question> questions = new ArrayList<>();
-
     @OneToMany(mappedBy ="quiz", cascade = CascadeType.ALL)
-    private List<SubmittedQuestion> submittedQuestions = new ArrayList<>();
+    private List<QuizSubmission> submissions = new ArrayList<>();
 
 
-
-
-    public List<SubmittedQuestion> getSubmittedQuestions() {
-        return submittedQuestions;
-    }
-
-    public void setSubmittedQuestions(List<SubmittedQuestion> submittedQuestions) {
-        this.submittedQuestions = submittedQuestions;
-    }
 
     public Long getQuizID() {
         return quizID;
@@ -55,19 +39,11 @@ public class Quiz {
     }
 
     public Course getCourseId() {
-        return courseId;
+        return course;
     }
 
     public void setCourseId(Course courseId) {
-        this.courseId = courseId;
-    }
-
-    public Student getStudent() {
-        return student;
-    }
-
-    public void setStudent(Student user) {
-        this.student = user;
+        this.course = courseId;
     }
 
     public String getQuizTitle() {
@@ -86,11 +62,19 @@ public class Quiz {
         this.quizDuration = quizDuration;
     }
 
-    public List<Question> getQuestions() {
-        return questions;
+    public List<QuizSubmission> getSubmissions() {
+        return submissions;
     }
 
-    public void setQuestions(List<Question> questions) {
-        this.questions = questions;
+    public void setSubmissions(List<QuizSubmission> submissions) {
+        this.submissions = submissions;
+    }
+
+    public Course getCourse() {
+        return course;
+    }
+
+    public void setCourse(Course course) {
+        this.course = course;
     }
 }
