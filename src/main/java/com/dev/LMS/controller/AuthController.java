@@ -14,7 +14,7 @@ import com.dev.LMS.dto.RegisterDto;
 
 import java.util.HashMap;
 import java.util.Map;
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 @RestController
 public class AuthController {
