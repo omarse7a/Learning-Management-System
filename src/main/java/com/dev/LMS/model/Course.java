@@ -123,6 +123,7 @@ public class Course {
 
     public void setInstructor(Instructor instructor) {
         this.instructor = instructor;
+        instructor.createCourse(this);
     }
 
     public Set<Student> getEnrolled_students() {
