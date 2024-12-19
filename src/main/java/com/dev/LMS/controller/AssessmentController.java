@@ -100,4 +100,50 @@ public class AssessmentController {
 //
 //    }
 
+    @PostMapping("/create-assignment")
+    public ResponseEntity<?> createAssignment(@RequestBody String courseName, @RequestBody Assignment assignment){
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userService.getUserByEmail(email);
+        if (user == null) {
+            return ResponseEntity.badRequest().body("User not found, Please register or login first");
+        }
+        if (!(user  instanceof Instructor)) {
+            return ResponseEntity.status(403).body("You are not authorized to create an assignment");
+        }
+        Instructor instructor = (Instructor) user;
+        // returns true if the user is the instructor of this course
+        if(assessmentService.addAssignment(courseName,assignment,instructor)){
+            return ResponseEntity.status(HttpStatus.CREATED).body("Assignment created successfully");
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to add assignments to this course");
+    }
+
+    @GetMapping("/view-assignments")
+    public ResponseEntity<?> viewAssignments(@PathVariable String courseName){
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userService.getUserByEmail(email);
+        if (user == null) {
+            return ResponseEntity.badRequest().body("User not found, Please register or login first");
+        }
+        if ((user  instanceof Instructor )|| (user instanceof Student)) {}
+
+        return ResponseEntity.status(403).body("You are not authorized to create an assignment");
+    }
+
+    @GetMapping("/view-assignment/{id}")
+    public ResponseEntity<?> viewAssignment(@PathVariable("id") int assignment_id){
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userService.getUserByEmail(email);
+        if (user == null) {
+            return ResponseEntity.badRequest().body("User not found, Please register or login first");
+        }
+        if (user  instanceof Instructor) {
+
+        }
+        else if(user  instanceof Student) {
+
+        }
+        return ResponseEntity.status(403).body("You are not authorized to create an assignment");
+    }
+
 }

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 @Service
 public class AssessmentService {
@@ -48,8 +49,15 @@ public class AssessmentService {
         Quiz quiz= null;
         return quiz;
     }
-    public void addAssignment(Course course){
-
+    public boolean addAssignment(String courseName, Assignment assignment, Instructor instructor){
+        Course course = courseRepository.findByName(courseName).orElse(null);
+        Set<Course> instructorCourses = instructor.getCreatedCourses();
+        if(instructorCourses.contains(course)){
+            course.addAssignment(assignment);
+            courseRepository.save(course);
+            return true;
+        }
+        return false;
     }
     public void getAssignment(Course course){
 
