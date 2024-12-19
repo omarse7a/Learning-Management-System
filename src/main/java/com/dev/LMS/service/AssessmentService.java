@@ -2,79 +2,77 @@ package com.dev.LMS.service;
 
 import com.dev.LMS.model.*;
 import com.dev.LMS.repository.CourseRepositry;
-import com.dev.LMS.repository.QuestionRepositry;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Random;
 
 @Service
 public class AssessmentService {
-    CourseRepositry courseRepositry;
-    QuestionRepositry questionRepositry;
-    void createQuestion(int courseId , QuestionType type ,List<Choice> choices, String correctAnswer ){
-        Question newQuestion = new Question();
+    private CourseRepositry courseRepositry;
+
+    public void createQuestion(int courseId , Question question ){
         Course course = courseRepositry.findById(courseId);
-        newQuestion.setChoices(choices);
-        newQuestion.setCourse(course);
-        newQuestion.setCorrectAnswer(correctAnswer);
-        newQuestion.setType(type);
         List<Question> questions = course.getQuestions();
-        questions.add(newQuestion);
+        questions.add(question);
         course.setQuestions(questions);
     }
     // no need for course so I remove it
-    Question getQuestionById(int questionId){
-        Question question = questionRepositry.findById(questionId);
+    public Question getQuestionById(int courseId, int questionId){
+        Course course= null;
+
+        Question question = null;
         return question;
     }
     // change parameter Course-> CourseId
-    List<Question> getQuestions(int courseId){
+    public List<Question> getQuestions(int courseId){
         List<Question> questionList = null;
         return questionList;
     }
     // change parameter Course-> CourseId
-    void createQuiz(int courseId , Quiz newQuiz){
+    public void createQuiz(int courseId , Quiz newQuiz){
         Course course = courseRepositry.findById(courseId);
         List<Quiz> quizs = course.getQuizzes();
         quizs.add(newQuiz);
     }
     // change parameter Course-> CourseId
-    Quiz generateQuiz(int courseId){
+    public Quiz generateQuiz(int courseId){
         Course course = courseRepositry.findById(courseId);
+        Random random = new Random();
         Quiz quiz= null;
         return quiz;
     }
-    void addAssignment(Course course){
+    public void addAssignment(Course course){
 
     }
-    void getAssignment(Course course){
+    public void getAssignment(Course course){
 
     }
-    void handAssignment(int assignmentId){
+    public void handAssignment(int assignmentId){
 
     }
 
-    void gradeQuiz(Quiz quiz){
+    public void gradeQuiz(Quiz quiz){
 
     }
-    int getQuizGrade(Quiz quiz) {
+    public int getQuizGrade(Quiz quiz) {
         return 0;
     }
-    List<Assignment> getAssignmentSub(Assignment assignment){
+    public  List<Assignment> getAssignmentSub(Assignment assignment){
         List<Assignment> assignmentList = null;
         return assignmentList;
     }
-    void setAssignmentGrade(Assignment assignment) {
+    public void setAssignmentGrade(Assignment assignment) {
 
     }
-    int getAssignmentGrade(Assignment assignment) {
+    public int getAssignmentGrade(Assignment assignment) {
         return 0;
     }
-    List<Lesson> getLessonsAttended(Course course){
+    public List<Lesson> getLessonsAttended(Course course){
         List<Lesson> lessonList=null;
         return lessonList;
     }
-    String send_feedback(Student student) {
+    public String send_feedback(Student student) {
         return "11";
     }
 }
