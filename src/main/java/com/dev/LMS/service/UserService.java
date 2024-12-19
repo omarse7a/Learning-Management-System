@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.dev.LMS.util.JwtUtil;
+import java.util.List;
 
 @Service
 public class UserService {
@@ -55,5 +56,22 @@ public class UserService {
         existingUser.setPassword(passwordEncoder.encode(updateProfileDto.getPassword()));
 
         return userRepo.save(existingUser);
+    }
+
+    public List<User> getAllUsers() {
+        return userRepo.findAll();
+    }
+
+    public User getUserById(int id) {
+        return userRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+    }
+
+    public User createUser(User user) {
+        return userRepo.save(user);
+    }
+
+    public void deleteUser(int id) {
+        userRepo.deleteById(id);
     }
 }
