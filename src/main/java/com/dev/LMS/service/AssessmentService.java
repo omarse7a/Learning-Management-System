@@ -11,15 +11,15 @@ import java.util.Random;
 public class AssessmentService {
     private CourseRepository courseRepository;
 
-    public void createQuestion(int courseId , Question question ){
-        Course course = courseRepository.findById(courseId).orElse(null);
+    public void createQuestion(String courseName , Question question ){
+        Course course = courseRepository.findByName(courseName).orElse(null);
         List<Question> questions = course.getQuestions();
         questions.add(question);
         course.setQuestions(questions);
     }
     // no need for course so I remove it
-    public Question getQuestionById(int courseId, int questionId){
-        Course course= courseRepository.findById(courseId).orElse(null);
+    public Question getQuestionById(String courseName, int questionId){
+        Course course= courseRepository.findByName(courseName).orElse(null);
         List<Question> questions = course.getQuestions();
         for (int i = 0; i < questions.size(); i++) {
             Question temp = questions.get(i);
@@ -30,19 +30,20 @@ public class AssessmentService {
         return null;
     }
     // change parameter Course-> CourseId
-    public List<Question> getQuestions(int courseId){
-        List<Question> questionList = null;
+    public List<Question> getQuestions(String courseName){
+        Course course = courseRepository.findByName(courseName).orElse(null);
+        List<Question> questionList = course.getQuestions();
         return questionList;
     }
     // change parameter Course-> CourseId
-    public void createQuiz(int courseId , Quiz newQuiz){
-        Course course = courseRepository.findById(courseId).orElse(null);
+    public void createQuiz(String courseName , Quiz newQuiz){
+        Course course = courseRepository.findByName(courseName).orElse(null);
         List<Quiz> quizs = course.getQuizzes();
         quizs.add(newQuiz);
     }
     // change parameter Course-> CourseId
-    public Quiz generateQuiz(int courseId){
-        Course course = courseRepository.findById(courseId).orElse(null);
+    public Quiz generateQuiz(String courseName){
+        Course course = courseRepository.findByName(courseName).orElse(null);
         Random random = new Random();
         Quiz quiz= null;
         return quiz;
