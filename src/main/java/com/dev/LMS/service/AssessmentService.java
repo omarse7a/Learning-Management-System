@@ -2,16 +2,18 @@ package com.dev.LMS.service;
 
 import com.dev.LMS.model.*;
 import com.dev.LMS.repository.CourseRepositry;
+import com.dev.LMS.repository.QuestionRepositry;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class AssessmentService {
-    CourseRepositry repo;
+    CourseRepositry courseRepositry;
+    QuestionRepositry questionRepositry;
     void createQuestion(int courseId , QuestionType type ,List<Choice> choices, String correctAnswer ){
         Question newQuestion = new Question();
-        Course course = repo.findById(courseId);
+        Course course = courseRepositry.findById(courseId);
         newQuestion.setChoices(choices);
         newQuestion.setCourse(course);
         newQuestion.setCorrectAnswer(correctAnswer);
@@ -20,18 +22,25 @@ public class AssessmentService {
         questions.add(newQuestion);
         course.setQuestions(questions);
     }
-    Question getQuestionById(Course course,int questionId){
-        Question question = null;
+    // no need for course so I remove it
+    Question getQuestionById(int questionId){
+        Question question = questionRepositry.findById(questionId);
         return question;
     }
-    List<Question> getQuestions(Course course){
+    // change parameter Course-> CourseId
+    List<Question> getQuestions(int courseId){
         List<Question> questionList = null;
         return questionList;
     }
-    void createQuiz(Course course){
-
+    // change parameter Course-> CourseId
+    void createQuiz(int courseId , Quiz newQuiz){
+        Course course = courseRepositry.findById(courseId);
+        List<Quiz> quizs = course.getQuizzes();
+        quizs.add(newQuiz);
     }
-    Quiz generateQuiz(Course course){
+    // change parameter Course-> CourseId
+    Quiz generateQuiz(int courseId){
+        Course course = courseRepositry.findById(courseId);
         Quiz quiz= null;
         return quiz;
     }
