@@ -10,6 +10,10 @@ import java.util.Objects;
 
 @Entity
 public class Question {
+    public Question() {
+    ;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -43,8 +47,6 @@ public class Question {
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
     private List<SubmittedQuestion> submittedQuestions = new ArrayList<>();
 
-    public Question() {
-    }
 
     public QuestionType getType() {
         return type;
