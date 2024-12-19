@@ -1,5 +1,6 @@
 package com.dev.LMS.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 import java.sql.Time;

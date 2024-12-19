@@ -1,6 +1,7 @@
 package com.dev.LMS.controller;
 
 import java.util.*;
+import com.dev.LMS.dto.*;
 import com.dev.LMS.model.Course;
 import com.dev.LMS.model.Instructor;
 import com.dev.LMS.model.Student;
@@ -38,7 +39,8 @@ public class CourseController
             }
             Instructor instructor = (Instructor) user;
             Course createdcourse = courseService.createCourse(course, instructor);
-            return ResponseEntity.ok(createdcourse);
+            CourseDto courseDto = new CourseDto(createdcourse);
+            return ResponseEntity.ok(courseDto);
         }
         catch (Exception e){
             return ResponseEntity.badRequest().body("An error occurred" + e.getMessage());
@@ -46,12 +48,14 @@ public class CourseController
     }
 
     @GetMapping("/get-course")
-    public ResponseEntity<?> getCourse(@RequestBody String courseName ){
+    public ResponseEntity<?> getCourse(@RequestBody CourseRequestDto requestDto ){
+        String courseName = requestDto.getCourseName();
         Course course = courseService.getCourse(courseName);
         if(course == null){
             return ResponseEntity.badRequest().body("Course not found");
         }
-        return ResponseEntity.ok(course);
+        CourseDto courseDto = new CourseDto(course);
+        return ResponseEntity.ok(courseDto);
     }
 
     @GetMapping("/get-all-courses")
@@ -60,7 +64,9 @@ public class CourseController
         if(courseList == null){
             return ResponseEntity.ok().body("No courses found");
         }
-        return ResponseEntity.ok(courseList);
+        List<CourseDto> courseDtoList = new ArrayList<>();
+        for(Course course: courseList){courseDtoList.add(new CourseDto(course));}
+        return ResponseEntity.ok(courseDtoList);
     }
 
     @GetMapping("/get-my-courses")
@@ -77,7 +83,9 @@ public class CourseController
               if(createdCourses == null){
                   return ResponseEntity.ok().body("No courses found");
               }
-              return ResponseEntity.ok(createdCourses);
+              Set<CourseDto> courseDtoList = new HashSet<>();
+              for(Course course: createdCourses){courseDtoList.add(new CourseDto(course));}
+              return ResponseEntity.ok(courseDtoList);
 
           }
           if (user instanceof Student){
@@ -86,7 +94,10 @@ public class CourseController
               if(enrolledCourses == null){
                   return ResponseEntity.ok().body("No courses found");
               }
-              return ResponseEntity.ok(enrolledCourses);
+              Set<CourseDto> courseDtoList = new HashSet<>();
+              for(Course course: enrolledCourses){courseDtoList.add(new CourseDto(course));}
+              return ResponseEntity.ok(courseDtoList);
+
           }
           else
               return getAllCourses();

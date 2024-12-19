@@ -28,13 +28,13 @@ public class Lesson {
 
     //extra lesson resource
     @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL)
-    @JsonManagedReference
+
     private List<LessonResource> lessonResources = new ArrayList<>();
 
     //Joining with course table
     @ManyToOne
     @JoinColumn(name = "course_id", nullable = false)
-    @JsonBackReference
+
     private Course course;
 
 

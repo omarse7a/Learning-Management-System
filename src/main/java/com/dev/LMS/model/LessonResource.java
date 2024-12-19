@@ -20,7 +20,7 @@ public class LessonResource {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lesson_id", nullable = false)
-    @JsonBackReference
+
     private Lesson lesson;
 
     public LessonResource() {}

@@ -32,7 +32,7 @@ public class Assignment {
     private Course course;
 
     @OneToMany(mappedBy = "assignment", cascade = CascadeType.ALL)
-    @JsonManagedReference
+
     private List<AssignmentSubmisson> submissions = new ArrayList<>();
 
     public Long getAssignmentId() {

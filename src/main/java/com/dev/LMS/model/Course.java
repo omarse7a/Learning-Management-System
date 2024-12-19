@@ -31,7 +31,7 @@ public class Course {
     //Lessons
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "course_id")
-    @JsonManagedReference
+
     private List<Lesson> lessons = new ArrayList<>();
 
     //Attendance List
@@ -46,17 +46,14 @@ public class Course {
 
     // Assignment List
     @OneToMany(cascade = CascadeType.ALL)
-    @JsonManagedReference
     private List<Assignment> assignments = new ArrayList<>();
 
     // Quiz List
     @OneToMany(mappedBy = "course",cascade = CascadeType.ALL)
-    @JsonManagedReference
     private List<Quiz> quizzes = new ArrayList<>();
 
     // Question Bank
     @OneToMany(mappedBy = "course",cascade = CascadeType.ALL)
-    @JsonManagedReference
     private List<Question> questions = new ArrayList<>();
     public List<Lesson> getLessons() {
         return lessons;
@@ -123,7 +120,7 @@ public class Course {
 
     public void setInstructor(Instructor instructor) {
         this.instructor = instructor;
-        instructor.createCourse(this);
+
     }
 
     public Set<Student> getEnrolled_students() {
