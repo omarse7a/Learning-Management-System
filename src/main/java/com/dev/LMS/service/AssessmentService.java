@@ -1,7 +1,8 @@
 package com.dev.LMS.service;
 
 import com.dev.LMS.model.*;
-import com.dev.LMS.repository.CourseRepositry;
+import com.dev.LMS.repository.CourseRepository;
+import jakarta.validation.constraints.Null;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -9,17 +10,17 @@ import java.util.Random;
 
 @Service
 public class AssessmentService {
-    private CourseRepositry courseRepositry;
+    private CourseRepository courseRepositry;
 
     public void createQuestion(int courseId , Question question ){
-        Course course = courseRepositry.findById(courseId);
+        Course course = courseRepositry.findById(courseId).orElse(null);
         List<Question> questions = course.getQuestions();
         questions.add(question);
         course.setQuestions(questions);
     }
     // no need for course so I remove it
     public Question getQuestionById(int courseId, int questionId){
-        Course course= courseRepositry.findById(courseId);
+        Course course= courseRepositry.findById(courseId).orElse(null);
         List<Question> questions = course.getQuestions();
         for (int i = 0; i < questions.size(); i++) {
             Question temp = questions.get(i);
@@ -36,13 +37,13 @@ public class AssessmentService {
     }
     // change parameter Course-> CourseId
     public void createQuiz(int courseId , Quiz newQuiz){
-        Course course = courseRepositry.findById(courseId);
+        Course course = courseRepositry.findById(courseId).orElse(null);
         List<Quiz> quizs = course.getQuizzes();
         quizs.add(newQuiz);
     }
     // change parameter Course-> CourseId
     public Quiz generateQuiz(int courseId){
-        Course course = courseRepositry.findById(courseId);
+        Course course = courseRepositry.findById(courseId).orElse(null);
         Random random = new Random();
         Quiz quiz= null;
         return quiz;
