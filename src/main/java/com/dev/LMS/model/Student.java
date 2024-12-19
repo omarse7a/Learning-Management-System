@@ -1,5 +1,6 @@
 package com.dev.LMS.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
@@ -21,11 +22,9 @@ public class Student extends User{
     private Set<Course> enrolled_courses = new HashSet<>();
 
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
-    @JsonManagedReference
     private List<AssignmentSubmisson> AssignmentSubmissions = new ArrayList<>();
 
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
-    @JsonManagedReference
     private List<QuizSubmission> quizSubmissions = new ArrayList<>();
 
     public Student() {}
