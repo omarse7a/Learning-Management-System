@@ -143,5 +143,22 @@ public class CourseController
         }
     }
 
+    @GetMapping("/course/{course-name}/lessons")
+    public ResponseEntity<?> getAllLessons(@PathVariable("course-name") String courseName){
+        try{
+            Course course = courseService.getCourse(courseName);
+            if(course == null){
+                return ResponseEntity.badRequest().body("Course not found");
+            }
+            List<Lesson> lessons = course.getLessons();
+            List<LessonDto> lessonDtoList = new ArrayList<>();
+            for(Lesson lesson: lessons){lessonDtoList.add(new LessonDto(lesson));}
+            return ResponseEntity.ok(lessonDtoList);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("An error occurred" + e.getMessage());
+        }
+    }
+
+
 
 }
