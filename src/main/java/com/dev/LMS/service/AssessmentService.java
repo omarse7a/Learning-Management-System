@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.sql.Time;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -43,16 +45,64 @@ public class AssessmentService {
     }
     // change parameter Course-> CourseId
     public void createQuiz(String courseName , Quiz newQuiz){
-        Course course = courseRepository.findByName(courseName).orElse(null);
-        List<Quiz> quizs = course.getQuizzes();
-        quizs.add(newQuiz);
+        Course course = courseRepository.findByName(courseName)
+                .orElseThrow(() -> new IllegalArgumentException("Course not found: " + courseName));
+        List<Quiz> quizzes = course.getQuizzes();
+        quizzes.add(newQuiz);
+        course.setQuizzes(quizzes);
     }
     // change parameter Course-> CourseId
-    public Quiz generateQuiz(String courseName){
-        Course course = courseRepository.findByName(courseName).orElse(null);
-        Random random = new Random();
-        Quiz quiz= null;
-        return quiz;
+    public Quiz generateQuiz(String courseName, String quizTitle) {
+        Course course = courseRepository.findByName(courseName)
+                .orElseThrow(() -> new IllegalArgumentException("Course not found: " + courseName));
+
+        List<Question> allQuestions = course.getQuestions();
+        if (allQuestions.isEmpty()) {
+            throw new IllegalStateException("No questions available for this course.");
+        }
+        List<Quiz> quizzes = course.getQuizzes();
+        if(quizzes.isEmpty())
+            throw new IllegalStateException("No quizzes available for this course.");
+        Quiz currentQuiz = null;
+        boolean isFound = false;
+        for (int i = 0; i < quizzes.size(); i++) {
+            Quiz temp = quizzes.get(i);
+            if(temp.getQuizTitle().equals(quizTitle)){
+                currentQuiz = temp;
+                isFound = true;
+                break;
+            }
+        }
+        if(!isFound)
+            throw new IllegalStateException("This quiz dose not exit.");
+
+        Collections.shuffle(allQuestions);
+        List<Question> selectedQuestions = allQuestions.subList(0, Math.min(10, allQuestions.size()));
+        currentQuiz.setQuestions(selectedQuestions);
+        return null;
+    }
+
+    public void submitQuiz(String courseName, String quizTitle,QuizSubmission quizSubmission){
+        Course course = courseRepository.findByName(courseName)
+                .orElseThrow(() -> new IllegalArgumentException("Course not found: " + courseName));
+        List<Quiz> quizzes = course.getQuizzes();
+        if(quizzes.isEmpty())
+            throw new IllegalStateException("No quizzes available for this course.");
+        Quiz currentQuiz = null;
+        boolean isFound = false;
+        for (int i = 0; i < quizzes.size(); i++) {
+            Quiz temp = quizzes.get(i);
+            if(temp.getQuizTitle().equals(quizTitle)){
+                currentQuiz = temp;
+                isFound = true;
+                break;
+            }
+        }
+        if(!isFound)
+            throw new IllegalStateException("This quiz dose not exit.");
+        List<QuizSubmission> quizSubmissions = currentQuiz.getSubmissions();
+        quizSubmissions.add(quizSubmission);
+
     }
 
     public boolean addAssignment(Course course, Assignment assignment, Instructor instructor){

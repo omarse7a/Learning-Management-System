@@ -1,6 +1,8 @@
 package com.dev.LMS.controller;
 
+
 import com.dev.LMS.dto.AssignmentDto;
+import com.dev.LMS.exception.CourseNotFoundException;
 import com.dev.LMS.model.*;
 import com.dev.LMS.service.AssessmentService;
 import com.dev.LMS.service.CourseService;
@@ -94,21 +96,52 @@ public class AssessmentController {
             return new ResponseEntity<>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-//    @GetMapping("/take-quiz")
-//    public ResponseEntity<?> takeQuiz(@PathVariable("course-name") String courseName){
-//
-//        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-//
-//        User user = userService.getUserByEmail(email);
-//        if (user == null) {
-//            return ResponseEntity.badRequest().body("User not found, Please register or login first");
-//        }
-//        if (!(user  instanceof Student)) {
-//            return ResponseEntity.status(403).body("You are not StudentStudent");
-//        }
-//        Instructor instructor = (Instructor) user;
-//
-//    }
+    @GetMapping("/take-quiz/{quizName}")
+    public ResponseEntity<?> takeQuiz(
+            @PathVariable("course-name") String courseName,
+            @PathVariable("quizName") String quizName) {
+
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userService.getUserByEmail(email);
+        if (user == null) {
+            return ResponseEntity.badRequest().body("User not found. Please register or login first.");
+        }
+        if (!(user instanceof Student)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only students can take quizzes.");
+        }
+
+        try {
+            Quiz quiz = assessmentService.generateQuiz(courseName, quizName);
+            return ResponseEntity.status(HttpStatus.CREATED).body(quiz);
+        } catch (CourseNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+    @PostMapping("/submit-quiz/{quizName}")
+    public ResponseEntity<?> submitQuiz(
+            @PathVariable("course-name") String courseName,
+            @PathVariable("quizName") String quizName,@RequestBody QuizSubmission quizSubmission) {
+
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userService.getUserByEmail(email);
+        if (user == null) {
+            return ResponseEntity.badRequest().body("User not found. Please register or login first.");
+        }
+        if (!(user instanceof Student)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only students can take quizzes.");
+        }
+        try {
+            assessmentService.submitQuiz(courseName, quizName,quizSubmission);
+            return ResponseEntity.status(HttpStatus.CREATED).body("submitted successfully");
+        } catch (CourseNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
 
     @PostMapping("/create-assignment")
     public ResponseEntity<?> createAssignment(@PathVariable("course-name") String courseName, @RequestBody Assignment assignment){
