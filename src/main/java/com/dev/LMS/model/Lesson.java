@@ -33,8 +33,7 @@ public class Lesson {
 
     //Joining with course table
     @ManyToOne
-    @JoinColumn(name = "course_id", nullable = false)
-
+    @JoinColumn(name = "course_id")
     private Course course;
 
 

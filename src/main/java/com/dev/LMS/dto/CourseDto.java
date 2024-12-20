@@ -5,6 +5,7 @@ import lombok.Data;
 
 @Data
 public class CourseDto {
+    private int id;
     private String courseName;
     private String courseDescription;
     private float courseDuration;
@@ -15,6 +16,7 @@ public class CourseDto {
 
 
     public CourseDto(Course course) {
+        this.id = (int) course.getCourseId();
         this.courseName = course.getName();
         this.courseDescription = course.getDescription();
         this.courseDuration =  course.getDuration();
