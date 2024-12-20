@@ -6,7 +6,7 @@ import java.io.File;
 public class AssignmentSubmisson {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer submission_id;
+    private int submission_id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assignment_id")
@@ -25,11 +25,11 @@ public class AssignmentSubmisson {
     public AssignmentSubmisson() {
     }
 
-    public Integer getSubmission_id() {
+    public int getSubmission_id() {
         return submission_id;
     }
 
-    public void setSubmission_id(Integer submission_id) {
+    public void setSubmission_id(int submission_id) {
         this.submission_id = submission_id;
     }
 
