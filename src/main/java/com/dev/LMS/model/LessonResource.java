@@ -1,6 +1,7 @@
 package com.dev.LMS.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -20,7 +21,7 @@ public class LessonResource {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lesson_id", nullable = false)
-
+    @JsonIgnore
     private Lesson lesson;
 
     public LessonResource() {}

@@ -53,4 +53,16 @@ public class CourseService {
         courseRepository.save(course);
         return course.getLessons().getLast();
     }
+
+    public Lesson getLessonbyId(Course course, int lessonId) {
+        List<Lesson> lessonList = course.getLessons();
+        for (Lesson l : lessonList)
+        {
+            if (l.getLesson_id() == lessonId)
+                return l;
+        }
+        return null;
+
+
+    }
 }

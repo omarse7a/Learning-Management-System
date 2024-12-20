@@ -5,6 +5,7 @@ import com.dev.LMS.dto.*;
 import com.dev.LMS.model.*;
 import com.dev.LMS.service.CourseService;
 import com.dev.LMS.service.UserService;
+import jakarta.persistence.Id;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -157,6 +158,45 @@ public class CourseController
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("An error occurred" + e.getMessage());
         }
+    }
+
+    @GetMapping("/course/{course-name}/lessons/{lesson-id}")
+    public ResponseEntity<?> getLesson(@PathVariable("course-name") String courseName,@PathVariable("lesson-id") int lessonId){
+        try{
+            Course course = courseService.getCourse(courseName);
+            if(course == null){
+                return ResponseEntity.badRequest().body("Course not found");
+            }
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userService.getUserByEmail(email);
+            if (user == null) {
+                return ResponseEntity.badRequest().body("User not found, Please register or login first");
+            }
+            Lesson lesson = courseService.getLessonbyId(course, lessonId);
+            if(lesson == null){
+                return ResponseEntity.badRequest().body("Lesson not found");
+            }
+            if (user  instanceof Instructor ) {
+                Instructor instructor = (Instructor) user;
+                if (instructor.getId() != course.getInstructor().getId()) { //instructor of that course
+                    LessonDto  lessonDto = new LessonDto(lesson);
+                    return ResponseEntity.ok(lessonDto); //just simple data
+                }
+                else { //Instructor of the course
+                    DetailedLessonDto detailedLessonDto = new DetailedLessonDto(lesson);
+                    return ResponseEntity.ok(detailedLessonDto);
+                }
+            }
+            else { //Student or may be admin
+                LessonDto  lessonDto = new LessonDto(lesson);
+                return ResponseEntity.ok(lessonDto);
+            }
+
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().body("An error occurred" + e.getMessage());
+        }
+
     }
 
 
