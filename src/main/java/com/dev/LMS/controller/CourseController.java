@@ -2,18 +2,14 @@ package com.dev.LMS.controller;
 
 import java.util.*;
 import com.dev.LMS.dto.*;
-import com.dev.LMS.model.Course;
-import com.dev.LMS.model.Instructor;
-import com.dev.LMS.model.Student;
-import com.dev.LMS.model.User;
+import com.dev.LMS.model.*;
 import com.dev.LMS.service.CourseService;
 import com.dev.LMS.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 public class CourseController
@@ -47,10 +43,18 @@ public class CourseController
         }
     }
 
-    @GetMapping("/get-course")
-    public ResponseEntity<?> getCourse(@RequestBody CourseRequestDto requestDto ){
-        String courseName = requestDto.getCourseName();
+    @GetMapping("/search-course/{course-name}")
+    public ResponseEntity<?> getCourse(@Valid  @PathVariable("course-name") String courseName ){
         Course course = courseService.getCourse(courseName);
+        if(course == null){
+            return ResponseEntity.badRequest().body("Course not found");
+        }
+        CourseDto courseDto = new CourseDto(course);
+        return ResponseEntity.ok(courseDto);
+    }
+    @GetMapping("/course/{id}")
+    public ResponseEntity<?> getCourse(@PathVariable("id") int id){
+        Course course = courseService.getCourseById(id);
         if(course == null){
             return ResponseEntity.badRequest().body("Course not found");
         }
@@ -106,6 +110,37 @@ public class CourseController
       catch (Exception e){
           return ResponseEntity.badRequest().body("An error occurred" + e.getMessage());
       }
+    }
+
+    @PostMapping("/course/{course-name}/add-lesson")
+    public ResponseEntity<?> addLesson(@PathVariable("course-name") String courseName, @RequestBody Lesson lesson){
+        try{
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userService.getUserByEmail(email);
+            if (user == null) {
+                return ResponseEntity.badRequest().body("User not found, Please register or login first");
+            }
+            if (!(user  instanceof Instructor)) {
+                return ResponseEntity.status(403).body("You are not authorized to add a lesson to this course");
+            }
+            else{
+                Course course = courseService.getCourse(courseName);
+                if(course == null){
+                    return ResponseEntity.badRequest().body("Course not found");
+                }
+                Instructor instructor = (Instructor) user;
+                if(course.getInstructor().getId() != instructor.getId()){
+                    return ResponseEntity.status(403).body("You are not authorized to add a lesson to this course");
+                }
+                else{
+                    Lesson addedLesson = courseService.addLesson(course, lesson);
+                    LessonDto  lessonDto = new LessonDto(addedLesson);
+                    return ResponseEntity.ok(lessonDto);
+                }
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("An error occurred" + e.getMessage());
+        }
     }
 
 
