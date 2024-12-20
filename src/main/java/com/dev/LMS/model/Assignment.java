@@ -14,17 +14,16 @@ import java.util.Objects;
 public class Assignment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long assignment_id;
+    private int assignment_id;
 
     @Column
     private String title;
 
-    @Lob
     @Column
     private String description;
 
     @Column
-    private LocalDateTime dueDate;
+    private LocalDateTime dueDate;  // "2024-12-20T10:15:30"
 
     @ManyToOne
     @JoinColumn(name = "course_id", nullable = false)
@@ -32,14 +31,13 @@ public class Assignment {
     private Course course;
 
     @OneToMany(mappedBy = "assignment", cascade = CascadeType.ALL)
-
     private List<AssignmentSubmisson> submissions = new ArrayList<>();
 
-    public Long getAssignmentId() {
+    public int getAssignmentId() {
         return assignment_id;
     }
 
-    public void setAssignmentId(Long assignmentId) {
+    public void setAssignmentId(int assignmentId) {
         this.assignment_id = assignmentId;
     }
 
