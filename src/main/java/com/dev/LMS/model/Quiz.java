@@ -29,7 +29,16 @@ public class Quiz {
     @OneToMany(mappedBy ="quiz", cascade = CascadeType.ALL)
     private List<QuizSubmission> submissions = new ArrayList<>();
 
+    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL)
+    private List<Question> questions = new ArrayList<>();
 
+    public List<Question> getQuestions() {
+        return questions;
+    }
+
+    public void setQuestions(List<Question> questions) {
+        this.questions = questions;
+    }
 
     public Long getQuizID() {
         return quizID;
