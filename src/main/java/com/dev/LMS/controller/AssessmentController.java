@@ -108,6 +108,28 @@ public class AssessmentController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+    @PostMapping("/submit-quiz/{quizName}")
+    public ResponseEntity<?> submitQuiz(
+            @PathVariable("course-name") String courseName,
+            @PathVariable("quizName") String quizName,@RequestBody QuizSubmission quizSubmission) {
+
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userService.getUserByEmail(email);
+        if (user == null) {
+            return ResponseEntity.badRequest().body("User not found. Please register or login first.");
+        }
+        if (!(user instanceof Student)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only students can take quizzes.");
+        }
+        try {
+            assessmentService.submitQuiz(courseName, quizName,quizSubmission);
+            return ResponseEntity.status(HttpStatus.CREATED).body("submitted successfully");
+        } catch (CourseNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
 
 
 }

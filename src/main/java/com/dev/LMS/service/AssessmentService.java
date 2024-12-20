@@ -57,11 +57,12 @@ public class AssessmentService {
         List<Quiz> quizzes = course.getQuizzes();
         if(quizzes.isEmpty())
             throw new IllegalStateException("No quizzes available for this course.");
-
+        Quiz currentQuiz = null;
         boolean isFound = false;
         for (int i = 0; i < quizzes.size(); i++) {
             Quiz temp = quizzes.get(i);
             if(temp.getQuizTitle().equals(quizTitle)){
+                currentQuiz = temp;
                 isFound = true;
                 break;
             }
@@ -71,10 +72,32 @@ public class AssessmentService {
 
         Collections.shuffle(allQuestions);
         List<Question> selectedQuestions = allQuestions.subList(0, Math.min(10, allQuestions.size()));
-        // where to set this questions???
-
+        currentQuiz.setQuestions(selectedQuestions);
         return null;
     }
+    public void submitQuiz(String courseName, String quizTitle,QuizSubmission quizSubmission){
+        Course course = courseRepository.findByName(courseName)
+                .orElseThrow(() -> new IllegalArgumentException("Course not found: " + courseName));
+        List<Quiz> quizzes = course.getQuizzes();
+        if(quizzes.isEmpty())
+            throw new IllegalStateException("No quizzes available for this course.");
+        Quiz currentQuiz = null;
+        boolean isFound = false;
+        for (int i = 0; i < quizzes.size(); i++) {
+            Quiz temp = quizzes.get(i);
+            if(temp.getQuizTitle().equals(quizTitle)){
+                currentQuiz = temp;
+                isFound = true;
+                break;
+            }
+        }
+        if(!isFound)
+            throw new IllegalStateException("This quiz dose not exit.");
+        List<QuizSubmission> quizSubmissions = currentQuiz.getSubmissions();
+        quizSubmissions.add(quizSubmission);
+
+    }
+
 
     public void addAssignment(Course course){
 

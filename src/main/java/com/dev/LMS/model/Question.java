@@ -29,6 +29,16 @@ public class Question {
 
     @Column
     private String correctAnswer;
+    @ManyToOne
+    private Quiz quiz;
+
+    public Quiz getQuiz() {
+        return quiz;
+    }
+
+    public void setQuiz(Quiz quiz) {
+        this.quiz = quiz;
+    }
 
     @ManyToOne
     @JoinColumn(name = "course_id", nullable = false)
