@@ -28,6 +28,10 @@ public class Quiz {
 
     @OneToMany(mappedBy ="quiz", cascade = CascadeType.ALL)
     private List<QuizSubmission> submissions = new ArrayList<>();
+    public void addQuizSubmission(QuizSubmission quizSubmission){
+        this.submissions.add(quizSubmission);
+        quizSubmission.setQuiz(this);
+    }
 
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL)
     private List<Question> questions = new ArrayList<>();
