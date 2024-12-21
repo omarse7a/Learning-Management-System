@@ -1,8 +1,6 @@
 package com.dev.LMS.service;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -13,18 +11,19 @@ import com.dev.LMS.dto.StudentDto;
 import com.dev.LMS.model.*;
 import com.dev.LMS.repository.CourseRepository;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class CourseService {
     private final CourseRepository courseRepository;
+    private final UserService userService;
     @Value("${file.upload.base-path.lesson-resources}") //check application.yml
     private Path resourcesPath ;
 
-    public CourseService(CourseRepository courseRepository)  {
+    public CourseService(CourseRepository courseRepository, UserService userService)  {
         this.courseRepository = courseRepository;
+        this.userService = userService;
     }
 
     public Course createCourse(Course course, Instructor instructor){
@@ -182,4 +181,12 @@ public class CourseService {
         }
         return studentDtos;
     }
+
+    public void removeEnrolledstd(Course course, Instructor instructor, int studentId) {
+        User user = userService.getUserById(studentId);
+        if (user == null || !(user instanceof  Student))  throw new IllegalStateException("Student not found");
+        Student student = (Student) user;
+        course.removeStudent(student);
+        courseRepository.save(course);
+     }
 }

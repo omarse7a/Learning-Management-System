@@ -314,6 +314,36 @@ public class CourseController
         }
     }
 
+    @PutMapping("course/{courseName}/remove-student/{studentId}")
+    public ResponseEntity<?> removeEnrolledStd(@PathVariable("courseName") String courseName, @PathVariable("studentID") int studentId)
+    {
+        try{
+
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userService.getUserByEmail(email);
+        if (user == null) {
+            return ResponseEntity.badRequest().body("User not found, Please register or login first");
+        }
+        if (!(user instanceof Instructor)) {
+            return ResponseEntity.status(403).body("You are not authorized to remove a student from this course");
+        }
+        Instructor instructor = (Instructor) user;
+        Course course = courseService.getCourse(courseName);
+        if (course == null) return ResponseEntity.badRequest().body("Course not found");
+        if (instructor.getId() != course.getInstructor().getId()) {
+            return ResponseEntity.status(403).body("You are not authorized to remove a student from this course");
+        }
+
+        courseService.removeEnrolledstd(course, instructor, studentId);
+        return ResponseEntity.ok("Student removed successfully");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("An error occurred" + e.getMessage());
+        }
+
+
+
+    }
+
 
 
 }
