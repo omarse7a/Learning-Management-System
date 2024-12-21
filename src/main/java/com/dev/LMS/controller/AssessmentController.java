@@ -159,6 +159,26 @@ public class AssessmentController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+    @GetMapping("/{quizName}/grade")
+   // getQuizGrade(String quizTitle,String courseName , Student user)
+    public ResponseEntity<?> getGrade(@PathVariable("course-name") String courseName , @PathVariable("quizName") String quizTitle){
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User user = userService.getUserByEmail(email);
+        if (user == null) {
+            return ResponseEntity.badRequest().body("User not found, Please register or login first");
+        }
+        if (!(user  instanceof Student)) {
+            return ResponseEntity.status(403).body("You are not authorized to get the grade");
+        }
+        try {
+            int grade = assessmentService.getQuizGrade(quizTitle,courseName,(Student) user );
+            return  ResponseEntity.ok(grade);
+        }
+        catch(Exception e){
+            return new ResponseEntity<>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
     @PostMapping("/create-assignment")
     public ResponseEntity<?> createAssignment(@PathVariable("course-name") String courseName,
                                               @RequestBody Assignment assignment)

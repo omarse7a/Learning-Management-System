@@ -162,11 +162,9 @@ public class AssessmentService {
         if(quizzes.isEmpty()) throw new IllegalArgumentException("No quizzes available for "+courseName+" course");
         Quiz currentQuiz = null;
         boolean isFound = false;
-        int index = 0;
         for (int i = 0; i < quizzes.size(); i++) {
             Quiz temp = quizzes.get(i);
             if(temp.getQuizTitle().equals(quizTitle)){
-                index = i;
                 currentQuiz = temp;
                 isFound = true;
                 break;
