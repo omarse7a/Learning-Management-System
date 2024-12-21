@@ -5,6 +5,9 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 
 import java.util.ArrayList;
@@ -14,7 +17,9 @@ import java.util.Set;
 
 
 @Entity
-
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Lesson {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,7 +27,6 @@ public class Lesson {
     @Column(nullable = false)
     @NotEmpty
     private String title;
-    private String video_url;
     private String description;
     private int OTP;
 
@@ -45,88 +49,14 @@ public class Lesson {
     )
     private Set<Student> attendees = new HashSet<>();
 
-    public Lesson() {}
-
-    public Lesson(int OTP, String video_url, String description, String title, int lesson_id) {
-        this.OTP = OTP;
-        this.description = description;
-        this.title = title;
-        this.lesson_id = lesson_id;
-        this.video_url = video_url;
-    }
-
-    public int getLesson_id() {
-        return lesson_id;
-    }
-
-    public void setLesson_id(int lesson_id) {
-        this.lesson_id = lesson_id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public int getOTP() {
-        return OTP;
-    }
-
-    public void setOTP(int OTP) {
-        this.OTP = OTP;
-    }
-
-    public String getVideo_url() {
-        return video_url;
-    }
-
-    public void setVideo_url(String video_url) {
-        this.video_url = video_url;
-    }
 
 
-
-    //for students
-    public Set<Student> getAttendees() {
-        return attendees;
-    }
-
-    public void setAttendees(Set<Student> attendees) {
-        this.attendees = attendees;
-    }
 
     public void addAttendee(@NotNull Student user) {
             this.attendees.add(user);
     }
 
 
-    //for courses
-    public Course getCourse() {
-        return course;
-    }
-
-    public void setCourse(Course course) {
-        this.course = course;
-    }
-
-    //for resources
-    public void setLessonResources(List<LessonResource> lessonResources) {
-        this.lessonResources = lessonResources;
-    }
-    public List<LessonResource> getLessonResources() {
-        return lessonResources;
-    }
     public void addLessonResource(LessonResource lessonResource) {
         if (this.lessonResources == null) {
             this.lessonResources = new ArrayList<>();

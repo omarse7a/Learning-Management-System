@@ -1,5 +1,6 @@
 package com.dev.LMS.controller;
 
+import java.net.URLConnection;
 import java.util.*;
 import com.dev.LMS.dto.*;
 import com.dev.LMS.model.*;
@@ -9,6 +10,7 @@ import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.core.io.UrlResource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -46,8 +48,8 @@ public class CourseController
         }
     }
 
-    @GetMapping("/search-course/{course-name}")
-    public ResponseEntity<?> getCourse(@Valid  @PathVariable("course-name") String courseName ){
+    @GetMapping("/search-course/{courseName}")
+    public ResponseEntity<?> getCourse(@Valid  @PathVariable("courseName") String courseName ){
         Course course = courseService.getCourse(courseName);
         if(course == null){
             return ResponseEntity.badRequest().body("Course not found");
@@ -115,8 +117,8 @@ public class CourseController
       }
     }
 
-    @PostMapping("/course/{course-name}/add-lesson")
-    public ResponseEntity<?> addLesson(@PathVariable("course-name") String courseName, @RequestBody Lesson lesson){
+    @PostMapping("/course/{courseName}/add-lesson")
+    public ResponseEntity<?> addLesson(@PathVariable("courseName") String courseName, @RequestBody Lesson lesson){
         try{
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
             User user = userService.getUserByEmail(email);
@@ -146,8 +148,8 @@ public class CourseController
         }
     }
 
-    @GetMapping("/course/{course-name}/lessons")
-    public ResponseEntity<?> getAllLessons(@PathVariable("course-name") String courseName){
+    @GetMapping("/course/{courseName}/lessons")
+    public ResponseEntity<?> getAllLessons(@PathVariable("courseName") String courseName){
         try{
             Course course = courseService.getCourse(courseName);
             if(course == null){
@@ -162,8 +164,8 @@ public class CourseController
         }
     }
 
-    @GetMapping("/course/{course-name}/lessons/{lesson-id}")
-    public ResponseEntity<?> getLesson(@PathVariable("course-name") String courseName,@PathVariable("lesson-id") int lessonId){
+    @GetMapping("/course/{courseName}/lessons/{lessonId}")
+    public ResponseEntity<?> getLesson(@PathVariable("courseName") String courseName,@PathVariable("lessonId") int lessonId){
         try{
             Course course = courseService.getCourse(courseName);
             if(course == null){
@@ -201,8 +203,8 @@ public class CourseController
 
     }
 
-    @PostMapping("/course/{course-name}/lessons/{lesson-id}/addResource")
-    public ResponseEntity<?> addResource(@PathVariable("course-name") String courseName,@PathVariable("lesson-id") int lessonId,@RequestParam MultipartFile file){
+    @PostMapping("/course/{courseName}/lessons/{lessonId}/addResource")
+    public ResponseEntity<?> addResource(@PathVariable("courseName") String courseName,@PathVariable("lessonId") int lessonId,@RequestParam MultipartFile file){
         try{
             Course course = courseService.getCourse(courseName);
             if(course == null){
@@ -225,8 +227,8 @@ public class CourseController
 
     }
 
-    @GetMapping("/course/{course-name}/lessons/{lesson-id}/resources")
-    public ResponseEntity<?> getAllResources(@PathVariable("course-name") String courseName,@PathVariable("lesson-id") int lessonId){
+    @GetMapping("/course/{courseName}/lessons/{lessonId}/resources")
+    public ResponseEntity<?> getAllResources(@PathVariable("courseName") String courseName,@PathVariable("lessonId") int lessonId){
         try{
             Course course = courseService.getCourse(courseName);
             if(course == null){
@@ -237,10 +239,42 @@ public class CourseController
             if (user == null) {
                 return ResponseEntity.badRequest().body("User not found, Please register or login first");
             }
-           List<UrlResource> resources = courseService.getLessonResources(course, user, lessonId);
+            List<LessonResourceDto> resources = courseService.getLessonResources(course, user, lessonId);
 
             return  ResponseEntity.ok(resources);
 
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().body("An error occurred" + e.getMessage());
+        }
+    }
+
+    @GetMapping("/course/{courseName}/lessons/{lessonId}/resources/{resourceId}")
+    public ResponseEntity<?> getResource(@PathVariable("courseName") String courseName,
+                                         @PathVariable("lessonId") int lessonId,
+                                         @PathVariable("resourceId") int resourceId
+    ){
+        try{
+            Course course = courseService.getCourse(courseName);
+            if(course == null){
+                return ResponseEntity.badRequest().body("Course not found");
+            }
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userService.getUserByEmail(email);
+            if (user == null) {
+                return ResponseEntity.badRequest().body("User not found, Please register or login first");
+            }
+            byte[] resourceFile = courseService.getFileResources(course, user, lessonId, resourceId);
+            List<LessonResourceDto> lessonResources = courseService.getLessonResources(course,user,lessonId);
+            LessonResourceDto resource = null;
+            for (LessonResourceDto lessonResourceDto : lessonResources) {
+                if (lessonResourceDto.getResource_id() == resourceId){
+                    resource = lessonResourceDto;
+                    break;
+                }
+            }
+            String mimeType = URLConnection.guessContentTypeFromName(resource.getFile_name());
+            return ResponseEntity.status(200).contentType(MediaType.parseMediaType(mimeType)).body(resourceFile);
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body("An error occurred" + e.getMessage());

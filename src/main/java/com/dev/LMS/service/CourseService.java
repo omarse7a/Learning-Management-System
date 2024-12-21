@@ -1,10 +1,13 @@
 package com.dev.LMS.service;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
+import com.dev.LMS.dto.LessonResourceDto;
 import com.dev.LMS.model.*;
 import com.dev.LMS.repository.CourseRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -93,7 +96,7 @@ public class CourseService {
         else throw new IllegalStateException("Lesson not found");
     }
 
-    public List<UrlResource> getLessonResources(Course course, User user, int lessonId) {
+    public List<LessonResourceDto> getLessonResources(Course course, User user, int lessonId) {
         Lesson lesson = getLessonbyId(course, lessonId);
         if (lesson == null) throw new IllegalStateException("Lesson not found");
         if (user instanceof Instructor) {
@@ -106,26 +109,48 @@ public class CourseService {
             if (!student.getEnrolled_courses().contains(course) || !lesson.getAttendees().contains(student) )
                 throw new IllegalStateException("You are not authorized to access this resource");
         }
-
         List<LessonResource> lessonResources = lesson.getLessonResources();
-        List<UrlResource> urlResources = new ArrayList<>();
+        List<LessonResourceDto> lessonResourceDtos = new ArrayList<>();
         for (LessonResource lessonResource : lessonResources) {
-            urlResources.add(getResource(lessonResource));
+            lessonResourceDtos.add(new LessonResourceDto(lessonResource));
         }
-        return urlResources;
+        return lessonResourceDtos;
     }
 
-    private UrlResource getResource(LessonResource lessonResource) {
-        UrlResource resource;
-        try {
-            Path file = resourcesPath.resolve(lessonResource.getFile_name());
-            resource = new UrlResource(file.toUri());
-            if (resource.exists() || resource.isReadable()) {
-                return resource;
+    public byte[] getFileResources(Course course, User user, int lessonId, int resourceId) {
+        Lesson lesson = getLessonbyId(course, lessonId);
+        if (lesson == null) throw new IllegalStateException("Lesson not found");
+        if (user instanceof Instructor) {
+            Instructor instructor = (Instructor) user;
+            if (instructor.getId() != course.getInstructor().getId())
+                throw new IllegalStateException("You are not authorized to access this resource(I)");
+        }
+        if (user instanceof Student) {
+            Student student = (Student) user;
+            if (!student.getEnrolled_courses().contains(course) || !lesson.getAttendees().contains(student) )
+                throw new IllegalStateException("You are not authorized to access this resource");
+        }
+        List<LessonResource> resources = lesson.getLessonResources();
+        LessonResource resource = null;
+        for (LessonResource lessonResource : resources) {
+            if (lessonResource.getResource_id() == resourceId) {
+                resource = lessonResource;
+                break;
             }
-            else throw new RuntimeException("File Cannot be read");
-        } catch (MalformedURLException e) {
+        }
+        if (resource == null)
+            throw new IllegalStateException("Resource not found");
+
+        // storing the file into a byte array
+        String fileName = resource.getFile_name();
+        try {
+            byte[] resourceData = Files.readAllBytes(resourcesPath.resolve(fileName));
+            return resourceData;
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
+
+
+
 }
