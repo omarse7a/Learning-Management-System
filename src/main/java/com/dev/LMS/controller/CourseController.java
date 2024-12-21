@@ -282,5 +282,38 @@ public class CourseController
 
     }
 
+    @PostMapping("course/{courseName}/enroll")
+    public ResponseEntity<?> enrollCourse(@PathVariable("courseName") String courseName){
+       try {
+           String email = SecurityContextHolder.getContext().getAuthentication().getName();
+           User user = userService.getUserByEmail(email);
+           if (!(user instanceof Student))
+               return ResponseEntity.status(403).body("You are not authorized to enroll in this course");
+           Set<CourseDto> enrolledCourses = courseService.enrollCourse(courseName, user);
+           return ResponseEntity.ok(enrolledCourses);
+       }
+       catch (Exception e){
+           return ResponseEntity.badRequest().body("An error occurred" + e.getMessage());
+       }
+
+    }
+
+    @GetMapping("course/{courseName}/enrolled")
+    public ResponseEntity<?> getEnrolledStudents(@PathVariable("courseName") String courseName){
+        try{
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userService.getUserByEmail(email);
+            if (user == null) {
+                throw new Exception("User not found, Please register or login first");
+            }
+            Set<StudentDto> studentDtos = courseService.getEnrolledStd(courseName);
+            return ResponseEntity.ok(studentDtos);
+        }
+        catch (Exception e){
+            return ResponseEntity.badRequest().body("An error occurred" + e.getMessage());
+        }
+    }
+
+
 
 }

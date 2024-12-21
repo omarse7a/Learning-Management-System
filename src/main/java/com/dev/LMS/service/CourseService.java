@@ -7,7 +7,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
+import com.dev.LMS.dto.CourseDto;
 import com.dev.LMS.dto.LessonResourceDto;
+import com.dev.LMS.dto.StudentDto;
 import com.dev.LMS.model.*;
 import com.dev.LMS.repository.CourseRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -152,5 +154,32 @@ public class CourseService {
     }
 
 
+    public Set<CourseDto> enrollCourse(String courseName, User user) {
+        Student student = (Student) user;
+        Course course = getCourse(courseName);
+        if (course == null) throw new IllegalStateException("Course not found");
+        if (course.getEnrolled_students().contains(student))
+            throw new IllegalStateException("You are already enrolled in this course");
+        course.addStudent(student);
+        courseRepository.save(course);
+        Set<Course> enrolledCourses = student.getEnrolled_courses();
+        Set<CourseDto> enrolledCoursesDto = new HashSet<>();
+        for (Course c : enrolledCourses) {
+            enrolledCoursesDto.add(new CourseDto(c));
+        }
+        return enrolledCoursesDto;
 
+
+    }
+
+    public Set<StudentDto> getEnrolledStd(String courseName) {
+        Course course = getCourse(courseName);
+        if (course == null) throw new IllegalStateException("Course not found");
+        Set<Student> students = course.getEnrolled_students();
+        Set<StudentDto> studentDtos = new HashSet<>();
+        for (Student s : students) {
+            studentDtos.add(new StudentDto(s));
+        }
+        return studentDtos;
+    }
 }
