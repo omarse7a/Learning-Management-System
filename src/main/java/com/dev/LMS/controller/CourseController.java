@@ -5,23 +5,23 @@ import com.dev.LMS.dto.*;
 import com.dev.LMS.model.*;
 import com.dev.LMS.service.CourseService;
 import com.dev.LMS.service.UserService;
-import jakarta.persistence.Id;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+@AllArgsConstructor
 @Controller
 public class CourseController
 {
+
     private final CourseService courseService;
     private final UserService userService;
 
-    public CourseController(CourseService courseService, UserService userService) {
-        this.courseService = courseService;
-        this.userService = userService;
-    }
+
 
     @PostMapping("/create-course")
     public ResponseEntity<?> createCourse(@RequestBody Course course) {
@@ -199,6 +199,29 @@ public class CourseController
 
     }
 
+    @PostMapping("/course/{course-name}/lessons/{lesson-id}/addResource")
+    public ResponseEntity<?> addResource(@PathVariable("course-name") String courseName,@PathVariable("lesson-id") int lessonId,@RequestParam MultipartFile file){
+        try{
+            Course course = courseService.getCourse(courseName);
+            if(course == null){
+                return ResponseEntity.badRequest().body("Course not found");
+            }
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userService.getUserByEmail(email);
+            if (user == null) {
+                return ResponseEntity.badRequest().body("User not found, Please register or login first");
+            }
+            if (!(user instanceof Instructor)) return ResponseEntity.status(403).body("You are not authorized to add a resource to this lesson");
+            Instructor instructor = (Instructor) user;
+            if (instructor.getId() != course.getInstructor().getId()) return ResponseEntity.badRequest().body("You are not authorized to add a resource to this lesson");
+            String message = courseService.addLessonResource(course, lessonId, file);
+            return ResponseEntity.ok(message);
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("An error occurred" + e.getMessage());
+        }
+
+    }
 
 
 }

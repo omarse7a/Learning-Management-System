@@ -28,7 +28,6 @@ public class Lesson {
 
     //extra lesson resource
     @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL)
-
     private List<LessonResource> lessonResources = new ArrayList<>();
 
     //Joining with course table

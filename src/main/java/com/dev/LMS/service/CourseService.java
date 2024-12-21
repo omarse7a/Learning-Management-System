@@ -1,20 +1,27 @@
 package com.dev.LMS.service;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
-import com.dev.LMS.model.Course;
-import com.dev.LMS.model.Instructor;
-import com.dev.LMS.model.Lesson;
-import com.dev.LMS.model.Student;
+
+import com.dev.LMS.model.*;
 import com.dev.LMS.repository.CourseRepository;
+
+import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-
-
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class CourseService {
     private final CourseRepository courseRepository;
-    CourseService(CourseRepository courseRepository){
+    @Value("${file.upload.base-path.lesson-resources}") //check application.yml
+    private Path resourcesPath ;
+
+    public CourseService(CourseRepository courseRepository)  {
         this.courseRepository = courseRepository;
     }
 
@@ -63,6 +70,29 @@ public class CourseService {
         }
         return null;
 
+    }
 
+
+    public String addLessonResource(Course course, int lessonId, MultipartFile file) {
+        String fileName = file.getOriginalFilename();
+        String fileType = file.getContentType();
+        try{
+            if(fileName.contains("..")){
+                throw new RuntimeException("Invalid file name");
+            }
+            Files.copy(file.getInputStream(), this.resourcesPath.resolve(file.getOriginalFilename()));
+
+        }catch (Exception e){
+            throw new RuntimeException(e.getMessage());
+        }
+
+        Lesson lesson = getLessonbyId(course, lessonId);
+        if (lesson != null) {
+            LessonResource lessonResource = new LessonResource(fileName, fileType);
+            lesson.addLessonResource(lessonResource);
+            courseRepository.save(course);
+            return "file added successfully: " + fileName;
+        }
+        else throw new IllegalStateException("Lesson not found");
     }
 }

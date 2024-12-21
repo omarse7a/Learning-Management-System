@@ -2,8 +2,14 @@ server:
   port: 8080
 
 spring:
+
   main:
     web-application-type: servlet
+  servlet:
+    multipart:
+      file-size-threshold: 2KB
+      max-file-size: 100MB
+      max-request-size: 110MB
   datasource:
     url: jdbc:postgresql://localhost:5432/LMS
     username: postgres
@@ -11,8 +17,15 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     show-sql: true
     properties:
       hibernate:
         '[format_sql]': true
+
+
+#file
+file:
+  upload:
+    base-path:
+      lesson-resources: "${user.dir}/src/main/resources/upload/lesson_resources"
