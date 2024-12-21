@@ -2,6 +2,7 @@ package com.dev.LMS.controller;
 
 
 import com.dev.LMS.dto.AssignmentDto;
+import com.dev.LMS.dto.AssignmentSubmissionDto;
 import com.dev.LMS.exception.CourseNotFoundException;
 import com.dev.LMS.model.*;
 import com.dev.LMS.service.AssessmentService;
@@ -9,6 +10,7 @@ import com.dev.LMS.service.CourseService;
 import com.dev.LMS.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -168,7 +170,7 @@ public class AssessmentController {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to add assignments to this course");
     }
 
-    @GetMapping("/view-assignments")
+    @GetMapping("/assignments") // "/view-assignments"
     public ResponseEntity<?> viewAssignments(@PathVariable("course-name") String courseName)
     {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -189,9 +191,9 @@ public class AssessmentController {
         return ResponseEntity.status(403).body("You are not authorized to view assignments.");
     }
 
-    @GetMapping("/view-assignment/{id}")
+    @GetMapping("/assignment/{assignment_id}/view")     // "/view-assignment/{id}"
     public ResponseEntity<?> viewAssignment(@PathVariable("course-name") String courseName,
-                                            @PathVariable("id") int assignment_id)
+                                            @PathVariable("assignment_id") int assignment_id)
     {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userService.getUserByEmail(email);
@@ -202,19 +204,18 @@ public class AssessmentController {
         if (user instanceof Instructor || user instanceof Student) {
             // retrieving course
             Course course = courseService.getCourse(courseName);
-            if (course == null) {
-                return ResponseEntity.badRequest().body("Course not found.");
-            }
             // retrieve the assignments from the course
             Assignment assignment = assessmentService.getAssignment(course, user, assignment_id);
-
+            if(assignment == null){
+                return ResponseEntity.status(404).body("Assignment not found");
+            }
             // return the assignment in response
             return ResponseEntity.ok(new AssignmentDto(assignment));
         }
         return ResponseEntity.status(403).body("You are not authorized to view assignments.");
     }
 
-    @PostMapping("submit-assignment/{assignment_id}")
+    @PostMapping("assignment/{assignment_id}/submit")   // "submit-assignment/{assignment_id}"
     public ResponseEntity<?> submitAssignment(@PathVariable("course-name") String courseName,
                                               @PathVariable("assignment_id") int assignmentId,
                                               @RequestParam("file") MultipartFile file)
@@ -237,9 +238,9 @@ public class AssessmentController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("get-submission/{submission_id}")
-    public ResponseEntity<?> submitAssignment(@PathVariable("course-name") String courseName,
-                                              @PathVariable("submission_id") int submissionId)
+    @GetMapping("/assignment/{assignment_id}/submissions")
+    public ResponseEntity<?> getSubmissionsList(@PathVariable("course-name") String courseName,
+                                                @PathVariable("assignment_id") int assignmentId)
     {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userService.getUserByEmail(email);
@@ -249,7 +250,29 @@ public class AssessmentController {
         if(!(user instanceof Student)) {
             return ResponseEntity.status(403).body("You are not authorized to submit assignments.");
         }
+        Course course = courseService.getCourse(courseName);
+        Assignment assignment = assessmentService.getAssignment(course, user, assignmentId);
+        List<AssignmentSubmissionDto> submissionsDto = assessmentService.getSubmissions(assignment);
+        return ResponseEntity.ok(submissionsDto);
+    }
 
-        return ResponseEntity.ok("assignment submission retrieved successfully");  ////////////////////
+    @GetMapping("/assignment/{assignment_id}/submission/{submission_id}")
+    public ResponseEntity<?> getAssignmentSubmission(@PathVariable("course-name") String courseName,
+                                                     @PathVariable("assignment_id") int assignmentId,
+                                                     @PathVariable("submission_id") int submissionId)
+    {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userService.getUserByEmail(email);
+        if(user == null){
+            return ResponseEntity.badRequest().body("User not found, Please register or login first.");
+        }
+        if(!(user instanceof Student)) {
+            return ResponseEntity.status(403).body("You are not authorized to submit assignments.");
+        }
+        Course course = courseService.getCourse(courseName);
+        Assignment assignment = assessmentService.getAssignment(course, user, assignmentId);
+        byte[] submissionFile = assessmentService.downloadSubmissionFile(assignment, submissionId);
+
+        return ResponseEntity.status(200).contentType(MediaType.APPLICATION_PDF).body(submissionFile);
     }
 }

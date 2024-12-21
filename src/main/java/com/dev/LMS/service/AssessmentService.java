@@ -1,6 +1,7 @@
 package com.dev.LMS.service;
 
 import com.dev.LMS.dto.AssignmentDto;
+import com.dev.LMS.dto.AssignmentSubmissionDto;
 import com.dev.LMS.model.*;
 import com.dev.LMS.repository.CourseRepository;
 import com.dev.LMS.repository.UserRepository;
@@ -11,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.sql.Time;
 import java.util.Collections;
@@ -198,8 +200,33 @@ public class AssessmentService {
         return "file successfully uploaded to " + filePath;
     }
 
-    public void downloadSubmissionFile(String fileName){
+    public List<AssignmentSubmissionDto> getSubmissions(Assignment assignment){
+        List<AssignmentSubmissionDto> dtos = new ArrayList<>();
+        List<AssignmentSubmisson> submissions = assignment.getSubmissions();
+        for (AssignmentSubmisson submisson : submissions) {
+            dtos.add(new AssignmentSubmissionDto(submisson));
+        }
+        return dtos;
+    }
 
+    public byte[] downloadSubmissionFile(Assignment assignment, int submissionId){ // String fileName
+        // retrieving the assignment submission object by ID
+        List<AssignmentSubmisson> submissions = assignment.getSubmissions();
+        AssignmentSubmisson sub = new AssignmentSubmisson();
+        for (AssignmentSubmisson submisson : submissions) {
+            if(submisson.getSubmissionId() == submissionId){
+                sub = submisson;
+                break;
+            }
+        }
+        // storing the file into a byte array
+        String filePath = sub.getFilePath();
+        try {
+            byte[] submissionData = Files.readAllBytes(new File(filePath).toPath());
+            return submissionData;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void setAssignmentGrade(Assignment assignment) {

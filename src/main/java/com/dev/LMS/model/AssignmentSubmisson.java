@@ -1,14 +1,17 @@
 package com.dev.LMS.model;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.io.File;
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "assignment_submissions")
 public class AssignmentSubmisson {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int submission_id;
+    private int submissionId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assignment_id")
@@ -30,15 +33,22 @@ public class AssignmentSubmisson {
     @Column(name = "grade")
     private int grade = 0;
 
+    @Column(name = "is_graded")
+    private boolean isGraded = false;
+
+    @CreationTimestamp
+    @Column(name = "submission_date")
+    private LocalDateTime submissionDate;
+
     public AssignmentSubmisson() {
     }
 
-    public int getSubmission_id() {
-        return submission_id;
+    public int getSubmissionId() {
+        return submissionId;
     }
 
-    public void setSubmission_id(int submission_id) {
-        this.submission_id = submission_id;
+    public void setSubmissionId(int submissionId) {
+        this.submissionId = submissionId;
     }
 
     public Assignment getAssignment() {
@@ -87,5 +97,21 @@ public class AssignmentSubmisson {
 
     public void setGrade(int grade) {
         this.grade = grade;
+    }
+
+    public boolean isGraded() {
+        return isGraded;
+    }
+
+    public void setGraded(boolean graded) {
+        isGraded = graded;
+    }
+
+    public LocalDateTime getSubmissionDate() {
+        return submissionDate;
+    }
+
+    public void setSubmissionDate(LocalDateTime submissionDate) {
+        this.submissionDate = submissionDate;
     }
 }
