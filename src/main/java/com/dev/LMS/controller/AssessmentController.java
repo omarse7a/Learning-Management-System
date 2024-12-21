@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -144,7 +145,9 @@ public class AssessmentController {
 
 
     @PostMapping("/create-assignment")
-    public ResponseEntity<?> createAssignment(@PathVariable("course-name") String courseName, @RequestBody Assignment assignment){
+    public ResponseEntity<?> createAssignment(@PathVariable("course-name") String courseName,
+                                              @RequestBody Assignment assignment)
+    {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userService.getUserByEmail(email);
         if (user == null) {
@@ -166,7 +169,8 @@ public class AssessmentController {
     }
 
     @GetMapping("/view-assignments")
-    public ResponseEntity<?> viewAssignments(@PathVariable("course-name") String courseName){
+    public ResponseEntity<?> viewAssignments(@PathVariable("course-name") String courseName)
+    {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userService.getUserByEmail(email);
         if (user == null) {
@@ -186,7 +190,9 @@ public class AssessmentController {
     }
 
     @GetMapping("/view-assignment/{id}")
-    public ResponseEntity<?> viewAssignment(@PathVariable("course-name") String courseName, @PathVariable("id") int assignment_id){
+    public ResponseEntity<?> viewAssignment(@PathVariable("course-name") String courseName,
+                                            @PathVariable("id") int assignment_id)
+    {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userService.getUserByEmail(email);
         if (user == null) {
@@ -209,17 +215,41 @@ public class AssessmentController {
     }
 
     @PostMapping("submit-assignment/{assignment_id}")
-    public ResponseEntity<?> submitAssignment(@PathVariable("course-name") String courseName, @PathVariable("id") int assignment_id, @RequestBody AssignmentSubmisson assignmentSubmisson){
+    public ResponseEntity<?> submitAssignment(@PathVariable("course-name") String courseName,
+                                              @PathVariable("assignment_id") int assignmentId,
+                                              @RequestParam("file") MultipartFile file)
+    {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userService.getUserByEmail(email);
         if(user == null){
-            return ResponseEntity.badRequest().body("User not found, Please register or login first");
+            return ResponseEntity.badRequest().body("User not found, Please register or login first.");
         }
         if(!(user instanceof Student)) {
             return ResponseEntity.status(403).body("You are not authorized to submit assignments.");
         }
+        if(!file.getOriginalFilename().endsWith(".pdf")){
+            return ResponseEntity.badRequest().body("Only PDF files are allowed.");
+        }
+        Student student = (Student) user;
         Course course = courseService.getCourse(courseName);
-        Assignment assignment = assessmentService.getAssignment(course, user, assignment_id);
-        return ResponseEntity.ok("Assignment submitted successfully");  ////////////////////
+        Assignment assignment = assessmentService.getAssignment(course, user, assignmentId);
+        String response = assessmentService.uploadSubmissionFile(file, assignment, student);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("get-submission/{submission_id}")
+    public ResponseEntity<?> submitAssignment(@PathVariable("course-name") String courseName,
+                                              @PathVariable("submission_id") int submissionId)
+    {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userService.getUserByEmail(email);
+        if(user == null){
+            return ResponseEntity.badRequest().body("User not found, Please register or login first.");
+        }
+        if(!(user instanceof Student)) {
+            return ResponseEntity.status(403).body("You are not authorized to submit assignments.");
+        }
+
+        return ResponseEntity.ok("assignment submission retrieved successfully");  ////////////////////
     }
 }

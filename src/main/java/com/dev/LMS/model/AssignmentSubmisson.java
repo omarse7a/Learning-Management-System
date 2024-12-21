@@ -1,8 +1,10 @@
 package com.dev.LMS.model;
 import jakarta.persistence.*;
+import lombok.Data;
+
 import java.io.File;
 @Entity
-
+@Table(name = "assignment_submissions")
 public class AssignmentSubmisson {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,11 +18,17 @@ public class AssignmentSubmisson {
     @JoinColumn(name = "student_id")
     private Student student;
 
-    @Column(name = "submission")
-    private File submission;
+    @Column(name = "file_name")
+    private String fileName;
+
+    @Column(name = "file_type")
+    private String fileType;
+
+    @Column(name = "file_path")
+    private String filePath;
 
     @Column(name = "grade")
-    private int grade;
+    private int grade = 0;
 
     public AssignmentSubmisson() {
     }
@@ -49,12 +57,28 @@ public class AssignmentSubmisson {
         this.student = student;
     }
 
-    public File getSubmission() {
-        return submission;
+    public String getFileName() {
+        return fileName;
     }
 
-    public void setSubmission(File submission) {
-        this.submission = submission;
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public String getFileType() {
+        return fileType;
+    }
+
+    public void setFileType(String fileType) {
+        this.fileType = fileType;
+    }
+
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
     }
 
     public int getGrade() {

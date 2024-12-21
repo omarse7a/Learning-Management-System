@@ -39,6 +39,7 @@ public class SecurityConfig {
                 .requestMatchers("/course/{course-name}/create-assignment").hasRole("INSTRUCTOR")
                 .requestMatchers("/course/{course-name}/view-assignments").hasAnyRole("STUDENT", "INSTRUCTOR")
                 .requestMatchers("/course/{course-name}/view-assignment/{assignment_id}").hasAnyRole("STUDENT", "INSTRUCTOR")
+                .requestMatchers("/course/{course-name}/submit-assignment/{assignment_id}").hasRole("STUDENT")
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> 
