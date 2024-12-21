@@ -1,12 +1,18 @@
 package com.dev.LMS.service;
 
 import com.dev.LMS.dto.AssignmentDto;
+import com.dev.LMS.dto.AssignmentSubmissionDto;
 import com.dev.LMS.model.*;
 import com.dev.LMS.repository.CourseRepository;
+import com.dev.LMS.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.sql.Time;
 import java.util.Collections;
@@ -18,6 +24,11 @@ import java.util.Set;
 public class AssessmentService {
     @Autowired
     private CourseRepository courseRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    private final String UPLOAD_DIR = "../../../../../resources/uploads/assignment-submissions/";
 
     public void createQuestion(String courseName , Question question ){
         Course course = courseRepository.findByName(courseName).orElse(null);
@@ -105,6 +116,17 @@ public class AssessmentService {
 
     }
 
+    public void gradeQuiz(Quiz quiz){
+
+    }
+    public int getQuizGrade(Quiz quiz) {
+        return 0;
+    }
+    public  List<Assignment> getAssignmentSub(Assignment assignment){
+        List<Assignment> assignmentList = null;
+        return assignmentList;
+    }
+
     public boolean addAssignment(Course course, Assignment assignment, Instructor instructor){
         Set<Course> instructorCourses = instructor.getCreatedCourses();
         if(instructorCourses.contains(course)){
@@ -136,7 +158,7 @@ public class AssessmentService {
     }
 
     public Assignment getAssignment(Course course, User user, int assignmentId){
-        List<Assignment> assignments = null;
+        List<Assignment> assignments = List.of();
         if(user instanceof Instructor){
             Instructor instructor = (Instructor) user;
             Set<Course> instructorCourses = instructor.getCreatedCourses();
@@ -154,26 +176,66 @@ public class AssessmentService {
         }
         return null;
     }
-    public void submitAssignment(Course course, Assignment assignment){
 
+    public String uploadSubmissionFile(MultipartFile file, Assignment assignment, Student student){
+        String filePath = UPLOAD_DIR + file.getOriginalFilename();
+
+        // database part
+        AssignmentSubmisson a = new AssignmentSubmisson();
+        a.setFileName(file.getOriginalFilename());
+        a.setFileType(file.getContentType());
+        a.setFilePath(filePath);
+        a.setAssignment(assignment);
+        // sets the submission's student and adds the submission to the student's submissions list
+        student.addSubmission(a);
+        // saving using user repo!!!
+        userRepository.save(student);
+
+        // storing in the actual file system
+        try {
+            file.transferTo(new File(filePath));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return "file successfully uploaded to " + filePath;
     }
 
-    public void gradeQuiz(Quiz quiz){
+    public List<AssignmentSubmissionDto> getSubmissions(Assignment assignment){
+        List<AssignmentSubmissionDto> dtos = new ArrayList<>();
+        List<AssignmentSubmisson> submissions = assignment.getSubmissions();
+        for (AssignmentSubmisson submisson : submissions) {
+            dtos.add(new AssignmentSubmissionDto(submisson));
+        }
+        return dtos;
+    }
 
+    public byte[] downloadSubmissionFile(Assignment assignment, int submissionId){ // String fileName
+        // retrieving the assignment submission object by ID
+        List<AssignmentSubmisson> submissions = assignment.getSubmissions();
+        AssignmentSubmisson sub = new AssignmentSubmisson();
+        for (AssignmentSubmisson submisson : submissions) {
+            if(submisson.getSubmissionId() == submissionId){
+                sub = submisson;
+                break;
+            }
+        }
+        // storing the file into a byte array
+        String filePath = sub.getFilePath();
+        try {
+            byte[] submissionData = Files.readAllBytes(new File(filePath).toPath());
+            return submissionData;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
-    public int getQuizGrade(Quiz quiz) {
-        return 0;
-    }
-    public  List<Assignment> getAssignmentSub(Assignment assignment){
-        List<Assignment> assignmentList = null;
-        return assignmentList;
-    }
+
     public void setAssignmentGrade(Assignment assignment) {
 
     }
     public int getAssignmentGrade(Assignment assignment) {
         return 0;
     }
+
     public List<Lesson> getLessonsAttended(Course course){
         List<Lesson> lessonList=null;
         return lessonList;
