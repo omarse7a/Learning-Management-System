@@ -1,26 +1,31 @@
 package com.dev.LMS.controller;
 
+import java.net.URLConnection;
 import java.util.*;
 import com.dev.LMS.dto.*;
 import com.dev.LMS.model.*;
 import com.dev.LMS.service.CourseService;
 import com.dev.LMS.service.UserService;
+import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+@AllArgsConstructor
 @Controller
 public class CourseController
 {
+
     private final CourseService courseService;
     private final UserService userService;
 
-    public CourseController(CourseService courseService, UserService userService) {
-        this.courseService = courseService;
-        this.userService = userService;
-    }
+
 
     @PostMapping("/create-course")
     public ResponseEntity<?> createCourse(@RequestBody Course course) {
@@ -43,8 +48,8 @@ public class CourseController
         }
     }
 
-    @GetMapping("/search-course/{course-name}")
-    public ResponseEntity<?> getCourse(@Valid  @PathVariable("course-name") String courseName ){
+    @GetMapping("/search-course/{courseName}")
+    public ResponseEntity<?> getCourse(@Valid  @PathVariable("courseName") String courseName ){
         Course course = courseService.getCourse(courseName);
         if(course == null){
             return ResponseEntity.badRequest().body("Course not found");
@@ -112,8 +117,8 @@ public class CourseController
       }
     }
 
-    @PostMapping("/course/{course-name}/add-lesson")
-    public ResponseEntity<?> addLesson(@PathVariable("course-name") String courseName, @RequestBody Lesson lesson){
+    @PostMapping("/course/{courseName}/add-lesson")
+    public ResponseEntity<?> addLesson(@PathVariable("courseName") String courseName, @RequestBody Lesson lesson){
         try{
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
             User user = userService.getUserByEmail(email);
@@ -142,6 +147,203 @@ public class CourseController
             return ResponseEntity.badRequest().body("An error occurred" + e.getMessage());
         }
     }
+
+    @GetMapping("/course/{courseName}/lessons")
+    public ResponseEntity<?> getAllLessons(@PathVariable("courseName") String courseName){
+        try{
+            Course course = courseService.getCourse(courseName);
+            if(course == null){
+                return ResponseEntity.badRequest().body("Course not found");
+            }
+            List<Lesson> lessons = course.getLessons();
+            List<LessonDto> lessonDtoList = new ArrayList<>();
+            for(Lesson lesson: lessons){lessonDtoList.add(new LessonDto(lesson));}
+            return ResponseEntity.ok(lessonDtoList);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("An error occurred" + e.getMessage());
+        }
+    }
+
+    @GetMapping("/course/{courseName}/lessons/{lessonId}")
+    public ResponseEntity<?> getLesson(@PathVariable("courseName") String courseName,@PathVariable("lessonId") int lessonId){
+        try{
+            Course course = courseService.getCourse(courseName);
+            if(course == null){
+                return ResponseEntity.badRequest().body("Course not found");
+            }
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userService.getUserByEmail(email);
+            if (user == null) {
+                return ResponseEntity.badRequest().body("User not found, Please register or login first");
+            }
+            Lesson lesson = courseService.getLessonbyId(course, lessonId);
+            if(lesson == null){
+                return ResponseEntity.badRequest().body("Lesson not found");
+            }
+            if (user  instanceof Instructor ) {
+                Instructor instructor = (Instructor) user;
+                if (instructor.getId() != course.getInstructor().getId()) { //instructor of that course
+                    LessonDto  lessonDto = new LessonDto(lesson);
+                    return ResponseEntity.ok(lessonDto); //just simple data
+                }
+                else { //Instructor of the course
+                    DetailedLessonDto detailedLessonDto = new DetailedLessonDto(lesson);
+                    return ResponseEntity.ok(detailedLessonDto);
+                }
+            }
+            else { //Student or may be admin
+                LessonDto  lessonDto = new LessonDto(lesson);
+                return ResponseEntity.ok(lessonDto);
+            }
+
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().body("An error occurred" + e.getMessage());
+        }
+
+    }
+
+    @PostMapping("/course/{courseName}/lessons/{lessonId}/addResource")
+    public ResponseEntity<?> addResource(@PathVariable("courseName") String courseName,@PathVariable("lessonId") int lessonId,@RequestParam MultipartFile file){
+        try{
+            Course course = courseService.getCourse(courseName);
+            if(course == null){
+                return ResponseEntity.badRequest().body("Course not found");
+            }
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userService.getUserByEmail(email);
+            if (user == null) {
+                return ResponseEntity.badRequest().body("User not found, Please register or login first");
+            }
+            if (!(user instanceof Instructor)) return ResponseEntity.status(403).body("You are not authorized to add a resource to this lesson");
+            Instructor instructor = (Instructor) user;
+            if (instructor.getId() != course.getInstructor().getId()) return ResponseEntity.badRequest().body("You are not authorized to add a resource to this lesson");
+            String message = courseService.addLessonResource(course, lessonId, file);
+            return ResponseEntity.ok(message);
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("An error occurred" + e.getMessage());
+        }
+
+    }
+
+    @GetMapping("/course/{courseName}/lessons/{lessonId}/resources")
+    public ResponseEntity<?> getAllResources(@PathVariable("courseName") String courseName,@PathVariable("lessonId") int lessonId){
+        try{
+            Course course = courseService.getCourse(courseName);
+            if(course == null){
+                return ResponseEntity.badRequest().body("Course not found");
+            }
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userService.getUserByEmail(email);
+            if (user == null) {
+                return ResponseEntity.badRequest().body("User not found, Please register or login first");
+            }
+            List<LessonResourceDto> resources = courseService.getLessonResources(course, user, lessonId);
+
+            return  ResponseEntity.ok(resources);
+
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().body("An error occurred" + e.getMessage());
+        }
+    }
+
+    @GetMapping("/course/{courseName}/lessons/{lessonId}/resources/{resourceId}")
+    public ResponseEntity<?> getResource(@PathVariable("courseName") String courseName,
+                                         @PathVariable("lessonId") int lessonId,
+                                         @PathVariable("resourceId") int resourceId
+    ){
+        try{
+            Course course = courseService.getCourse(courseName);
+            if(course == null){
+                return ResponseEntity.badRequest().body("Course not found");
+            }
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userService.getUserByEmail(email);
+            if (user == null) {
+                return ResponseEntity.badRequest().body("User not found, Please register or login first");
+            }
+            byte[] resourceFile = courseService.getFileResources(course, user, lessonId, resourceId);
+            List<LessonResourceDto> lessonResources = courseService.getLessonResources(course,user,lessonId);
+            LessonResourceDto resource = null;
+            for (LessonResourceDto lessonResourceDto : lessonResources) {
+                if (lessonResourceDto.getResource_id() == resourceId){
+                    resource = lessonResourceDto;
+                    break;
+                }
+            }
+            String mimeType = URLConnection.guessContentTypeFromName(resource.getFile_name());
+            return ResponseEntity.status(200).contentType(MediaType.parseMediaType(mimeType)).body(resourceFile);
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().body("An error occurred" + e.getMessage());
+        }
+
+    }
+
+    @PostMapping("course/{courseName}/enroll")
+    public ResponseEntity<?> enrollCourse(@PathVariable("courseName") String courseName){
+       try {
+           String email = SecurityContextHolder.getContext().getAuthentication().getName();
+           User user = userService.getUserByEmail(email);
+           if (!(user instanceof Student))
+               return ResponseEntity.status(403).body("You are not authorized to enroll in this course");
+           Set<CourseDto> enrolledCourses = courseService.enrollCourse(courseName, user);
+           return ResponseEntity.ok(enrolledCourses);
+       }
+       catch (Exception e){
+           return ResponseEntity.badRequest().body("An error occurred" + e.getMessage());
+       }
+
+    }
+
+    @GetMapping("course/{courseName}/enrolled")
+    public ResponseEntity<?> getEnrolledStudents(@PathVariable("courseName") String courseName){
+        try{
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userService.getUserByEmail(email);
+            if (user == null) {
+                throw new Exception("User not found, Please register or login first");
+            }
+            Set<StudentDto> studentDtos = courseService.getEnrolledStd(courseName);
+            return ResponseEntity.ok(studentDtos);
+        }
+        catch (Exception e){
+            return ResponseEntity.badRequest().body("An error occurred" + e.getMessage());
+        }
+    }
+
+    @PutMapping("course/{courseName}/remove-student/{studentId}")
+    public ResponseEntity<?> removeEnrolledStd(@PathVariable("courseName") String courseName, @PathVariable("studentID") int studentId)
+    {
+        try{
+
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userService.getUserByEmail(email);
+        if (user == null) {
+            return ResponseEntity.badRequest().body("User not found, Please register or login first");
+        }
+        if (!(user instanceof Instructor)) {
+            return ResponseEntity.status(403).body("You are not authorized to remove a student from this course");
+        }
+        Instructor instructor = (Instructor) user;
+        Course course = courseService.getCourse(courseName);
+        if (course == null) return ResponseEntity.badRequest().body("Course not found");
+        if (instructor.getId() != course.getInstructor().getId()) {
+            return ResponseEntity.status(403).body("You are not authorized to remove a student from this course");
+        }
+
+        courseService.removeEnrolledstd(course, instructor, studentId);
+        return ResponseEntity.ok("Student removed successfully");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("An error occurred" + e.getMessage());
+        }
+
+
+
+    }
+
 
 
 }

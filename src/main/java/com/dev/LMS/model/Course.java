@@ -189,6 +189,7 @@ public class Course {
     }
     public void removeStudent(Student user) {
         this.enrolled_students.remove(user);
+        user.unenrollCourse(this);
     }
     public void addStudent(@NotNull Student user) {
         if (user.getRole() == Role.STUDENT) {

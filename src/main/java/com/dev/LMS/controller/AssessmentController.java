@@ -1,5 +1,7 @@
 package com.dev.LMS.controller;
 
+import com.dev.LMS.dto.QuestionDto;
+import com.dev.LMS.dto.QuizDto;
 import com.dev.LMS.exception.CourseNotFoundException;
 import com.dev.LMS.model.*;
 import com.dev.LMS.service.AssessmentService;
@@ -80,7 +82,7 @@ public class AssessmentController {
             return ResponseEntity.status(403).body("You are not authorized to create an assignment");
         }
         try {
-            List<Question> questions = assessmentService.getQuestions(courseName);
+            List<QuestionDto> questions = assessmentService.getQuestions(courseName);
             return  ResponseEntity.ok(questions);
         }
         catch(Exception e){
@@ -98,7 +100,7 @@ public class AssessmentController {
             return ResponseEntity.status(403).body("You are not authorized to create an assignment");
         }
         try {
-           Question question =  assessmentService.getQuestionById(courseName,questionId);
+           QuestionDto question =  assessmentService.getQuestionById(courseName,questionId);
             return ResponseEntity.ok(question);
         }
         catch(Exception e){
@@ -120,7 +122,7 @@ public class AssessmentController {
         }
 
         try {
-            Quiz quiz = assessmentService.generateQuiz(courseName, quizName);
+            QuizDto quiz = assessmentService.generateQuiz(courseName, quizName);
             return ResponseEntity.status(HttpStatus.CREATED).body(quiz);
         } catch (CourseNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
