@@ -5,8 +5,10 @@ import com.dev.LMS.dto.*;
 import com.dev.LMS.model.*;
 import com.dev.LMS.service.CourseService;
 import com.dev.LMS.service.UserService;
+import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.core.io.UrlResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -218,6 +220,29 @@ public class CourseController
             return ResponseEntity.ok(message);
 
         } catch (Exception e) {
+            return ResponseEntity.badRequest().body("An error occurred" + e.getMessage());
+        }
+
+    }
+
+    @GetMapping("/course/{course-name}/lessons/{lesson-id}/resources")
+    public ResponseEntity<?> getAllResources(@PathVariable("course-name") String courseName,@PathVariable("lesson-id") int lessonId){
+        try{
+            Course course = courseService.getCourse(courseName);
+            if(course == null){
+                return ResponseEntity.badRequest().body("Course not found");
+            }
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userService.getUserByEmail(email);
+            if (user == null) {
+                return ResponseEntity.badRequest().body("User not found, Please register or login first");
+            }
+           List<UrlResource> resources = courseService.getLessonResources(course, user, lessonId);
+
+            return  ResponseEntity.ok(resources);
+
+        }
+        catch (Exception e) {
             return ResponseEntity.badRequest().body("An error occurred" + e.getMessage());
         }
 

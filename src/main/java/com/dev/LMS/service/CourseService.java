@@ -1,17 +1,14 @@
 package com.dev.LMS.service;
 
-import java.io.File;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 import com.dev.LMS.model.*;
 import com.dev.LMS.repository.CourseRepository;
-
-import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -94,5 +91,41 @@ public class CourseService {
             return "file added successfully: " + fileName;
         }
         else throw new IllegalStateException("Lesson not found");
+    }
+
+    public List<UrlResource> getLessonResources(Course course, User user, int lessonId) {
+        Lesson lesson = getLessonbyId(course, lessonId);
+        if (lesson == null) throw new IllegalStateException("Lesson not found");
+        if (user instanceof Instructor) {
+           Instructor instructor = (Instructor) user;
+           if (instructor.getId() != course.getInstructor().getId())
+               throw new IllegalStateException("You are not authorized to access this resource");
+        }
+        if (user instanceof Student) {
+            Student student = (Student) user;
+            if (!student.getEnrolled_courses().contains(course) || !lesson.getAttendees().contains(student) )
+                throw new IllegalStateException("You are not authorized to access this resource");
+        }
+
+        List<LessonResource> lessonResources = lesson.getLessonResources();
+        List<UrlResource> urlResources = new ArrayList<>();
+        for (LessonResource lessonResource : lessonResources) {
+            urlResources.add(getResource(lessonResource));
+        }
+        return urlResources;
+    }
+
+    private UrlResource getResource(LessonResource lessonResource) {
+        UrlResource resource;
+        try {
+            Path file = resourcesPath.resolve(lessonResource.getFile_name());
+            resource = new UrlResource(file.toUri());
+            if (resource.exists() || resource.isReadable()) {
+                return resource;
+            }
+            else throw new RuntimeException("File Cannot be read");
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
