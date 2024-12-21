@@ -58,6 +58,10 @@ public class Student extends User{
         this.enrolled_courses.add(course);
     }
 
+    public void unenrollCourse(Course course) {
+        this.enrolled_courses.remove(course);
+    }
+
     public List<AssignmentSubmisson> getAssignmentSubmissions() {
         return AssignmentSubmissions;
     }

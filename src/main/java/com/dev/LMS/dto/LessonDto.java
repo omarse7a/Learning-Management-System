@@ -11,6 +11,9 @@ public class LessonDto {
     private String courseName;
     private int numberOfAttendees;
 
+
+    public LessonDto() {
+    }
     public LessonDto(Lesson lesson) {
         this.id = lesson.getLesson_id();
         this.title = lesson.getTitle();
