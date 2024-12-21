@@ -1,12 +1,17 @@
 package com.dev.LMS.model;
 import jakarta.persistence.*;
-import java.io.File;
-@Entity
+import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.io.File;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "assignment_submissions")
 public class AssignmentSubmisson {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer submission_id;
+    private int submissionId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assignment_id")
@@ -16,21 +21,34 @@ public class AssignmentSubmisson {
     @JoinColumn(name = "student_id")
     private Student student;
 
-    @Column(name = "submission")
-    private File submission;
+    @Column(name = "file_name")
+    private String fileName;
+
+    @Column(name = "file_type")
+    private String fileType;
+
+    @Column(name = "file_path")
+    private String filePath;
 
     @Column(name = "grade")
-    private int grade;
+    private int grade = 0;
+
+    @Column(name = "is_graded")
+    private boolean isGraded = false;
+
+    @CreationTimestamp
+    @Column(name = "submission_date")
+    private LocalDateTime submissionDate;
 
     public AssignmentSubmisson() {
     }
 
-    public Integer getSubmission_id() {
-        return submission_id;
+    public int getSubmissionId() {
+        return submissionId;
     }
 
-    public void setSubmission_id(Integer submission_id) {
-        this.submission_id = submission_id;
+    public void setSubmissionId(int submissionId) {
+        this.submissionId = submissionId;
     }
 
     public Assignment getAssignment() {
@@ -49,12 +67,28 @@ public class AssignmentSubmisson {
         this.student = student;
     }
 
-    public File getSubmission() {
-        return submission;
+    public String getFileName() {
+        return fileName;
     }
 
-    public void setSubmission(File submission) {
-        this.submission = submission;
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public String getFileType() {
+        return fileType;
+    }
+
+    public void setFileType(String fileType) {
+        this.fileType = fileType;
+    }
+
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
     }
 
     public int getGrade() {
@@ -63,5 +97,21 @@ public class AssignmentSubmisson {
 
     public void setGrade(int grade) {
         this.grade = grade;
+    }
+
+    public boolean isGraded() {
+        return isGraded;
+    }
+
+    public void setGraded(boolean graded) {
+        isGraded = graded;
+    }
+
+    public LocalDateTime getSubmissionDate() {
+        return submissionDate;
+    }
+
+    public void setSubmissionDate(LocalDateTime submissionDate) {
+        this.submissionDate = submissionDate;
     }
 }
