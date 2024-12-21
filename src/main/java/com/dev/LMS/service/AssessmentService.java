@@ -1,19 +1,26 @@
 package com.dev.LMS.service;
 
+import com.dev.LMS.dto.AssignmentDto;
+import com.dev.LMS.dto.AssignmentSubmissionDto;
 import com.dev.LMS.model.*;
 import com.dev.LMS.repository.CourseRepository;
+import com.dev.LMS.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.sql.Time;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 @AllArgsConstructor
 @Service
 public class AssessmentService {
     private CourseRepository courseRepository;
+    private UserRepository userRepository;
+    private final String UPLOAD_DIR = "../../../../../resources/uploads/assignment-submissions/";
     public void createQuestion(String courseName , Question question ){
         Course course = courseRepository.findByName(courseName)
              .orElseThrow(() -> new IllegalArgumentException("Course not found: " + courseName));
@@ -102,17 +109,6 @@ public class AssessmentService {
             throw new IllegalStateException("This quiz dose not exit.");
     }
 
-
-    public void addAssignment(Course course){
-
-    }
-    public void getAssignment(Course course){
-
-    }
-    public void handAssignment(int assignmentId){
-
-    }
-
     public void gradeQuiz(String quizTitle,String courseName){
         Course course = courseRepository.findByName(courseName)
                 .orElseThrow(() -> new IllegalArgumentException("Course not found: " + courseName));
@@ -161,12 +157,116 @@ public class AssessmentService {
         List<Assignment> assignmentList = null;
         return assignmentList;
     }
+
+    public boolean addAssignment(Course course, Assignment assignment, Instructor instructor){
+        Set<Course> instructorCourses = instructor.getCreatedCourses();
+        if(instructorCourses.contains(course)){
+            course.addAssignment(assignment);
+            courseRepository.save(course);
+            return true;
+        }
+        return false;
+    }
+
+    public List<AssignmentDto> getAssignments(Course course, User user){
+        List<Assignment> assignments = null;
+        if(user instanceof Instructor){
+            Instructor instructor = (Instructor) user;
+            Set<Course> instructorCourses = instructor.getCreatedCourses();
+            if(instructorCourses.contains(course))
+                assignments = course.getAssignments();
+        } else {
+            Student student = (Student) user;
+            Set<Course> instructorCourses = student.getEnrolled_courses();
+            if (instructorCourses.contains(course))
+                assignments = course.getAssignments();
+        }
+        List<AssignmentDto> assignmentDtos = new ArrayList<>();
+        for (Assignment assignment : assignments) {
+            assignmentDtos.add(new AssignmentDto(assignment));
+        }
+        return assignmentDtos;
+    }
+
+    public Assignment getAssignment(Course course, User user, int assignmentId){
+        List<Assignment> assignments = List.of();
+        if(user instanceof Instructor){
+            Instructor instructor = (Instructor) user;
+            Set<Course> instructorCourses = instructor.getCreatedCourses();
+            if(instructorCourses.contains(course))
+                assignments = course.getAssignments();
+        } else {
+            Student student = (Student) user;
+            Set<Course> instructorCourses = student.getEnrolled_courses();
+            if (instructorCourses.contains(course))
+                assignments = course.getAssignments();
+        }
+        for (Assignment assignment : assignments) {
+            if(assignment.getAssignmentId() == assignmentId)
+                return assignment;
+        }
+        return null;
+    }
+
+    public String uploadSubmissionFile(MultipartFile file, Assignment assignment, Student student){
+        String filePath = UPLOAD_DIR + file.getOriginalFilename();
+
+        // database part
+        AssignmentSubmisson a = new AssignmentSubmisson();
+        a.setFileName(file.getOriginalFilename());
+        a.setFileType(file.getContentType());
+        a.setFilePath(filePath);
+        a.setAssignment(assignment);
+        // sets the submission's student and adds the submission to the student's submissions list
+        student.addSubmission(a);
+        // saving using user repo!!!
+        userRepository.save(student);
+
+        // storing in the actual file system
+        try {
+            file.transferTo(new File(filePath));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return "file successfully uploaded to " + filePath;
+    }
+
+    public List<AssignmentSubmissionDto> getSubmissions(Assignment assignment){
+        List<AssignmentSubmissionDto> dtos = new ArrayList<>();
+        List<AssignmentSubmisson> submissions = assignment.getSubmissions();
+        for (AssignmentSubmisson submisson : submissions) {
+            dtos.add(new AssignmentSubmissionDto(submisson));
+        }
+        return dtos;
+    }
+
+    public byte[] downloadSubmissionFile(Assignment assignment, int submissionId){ // String fileName
+        // retrieving the assignment submission object by ID
+        List<AssignmentSubmisson> submissions = assignment.getSubmissions();
+        AssignmentSubmisson sub = new AssignmentSubmisson();
+        for (AssignmentSubmisson submisson : submissions) {
+            if(submisson.getSubmissionId() == submissionId){
+                sub = submisson;
+                break;
+            }
+        }
+        // storing the file into a byte array
+        String filePath = sub.getFilePath();
+        try {
+            byte[] submissionData = Files.readAllBytes(new File(filePath).toPath());
+            return submissionData;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void setAssignmentGrade(Assignment assignment) {
 
     }
     public int getAssignmentGrade(Assignment assignment) {
         return 0;
     }
+
     public List<Lesson> getLessonsAttended(Course course){
         List<Lesson> lessonList=null;
         return lessonList;
