@@ -8,6 +8,7 @@ import com.dev.LMS.model.*;
 import com.dev.LMS.repository.CourseRepository;
 import com.dev.LMS.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.context.ApplicationContextException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -188,14 +189,14 @@ public class AssessmentService {
         throw new IllegalStateException("There is no submission for this student: "+ user.getName());
     }
 
-    public boolean addAssignment(Course course, Assignment assignment, Instructor instructor){
+    public AssignmentDto addAssignment(Course course, Assignment assignment, Instructor instructor){
         Set<Course> instructorCourses = instructor.getCreatedCourses();
         if(instructorCourses.contains(course)){
             course.addAssignment(assignment);
             courseRepository.save(course);
-            return true;
+            return new AssignmentDto(assignment);
         }
-        return false;
+        throw new IllegalStateException("You are not authorized to add assignments to this course");
     }
 
     public List<AssignmentDto> getAssignments(Course course, User user){
@@ -229,11 +230,15 @@ public class AssessmentService {
             Set<Course> instructorCourses = instructor.getCreatedCourses();
             if(instructorCourses.contains(course))
                 assignments = course.getAssignments();
+            else
+                throw new ApplicationContextException("You are not the instructor of this course");
         } else {
             Student student = (Student) user;
             Set<Course> studentCourses = student.getEnrolled_courses();
             if (studentCourses.contains(course))
                 assignments = course.getAssignments();
+            else
+                throw new ApplicationContextException("You are not enrolled in this course");
         }
         for (Assignment assignment : assignments) {
             if(assignment.getAssignmentId() == assignmentId)
@@ -260,7 +265,7 @@ public class AssessmentService {
         try {
             file.transferTo(new File(filePath));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Unable to store the file");
         }
         return "file successfully uploaded to " + filePath;
     }
@@ -290,7 +295,7 @@ public class AssessmentService {
             byte[] submissionData = Files.readAllBytes(new File(filePath).toPath());
             return submissionData;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Unable to load the file");
         }
     }
 
