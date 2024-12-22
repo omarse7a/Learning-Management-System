@@ -23,21 +23,20 @@ public class Quiz {
     @Column(nullable = false, unique = true)
     private String quizTitle;
 
-    @Column(nullable = false)
+//    @Column(nullable = false)
     private Time quizDuration;
 
     @OneToMany(mappedBy ="quiz", cascade = CascadeType.ALL)
-    private List<QuizSubmission> submissions = new ArrayList<>();
+    private List<QuizSubmission> submissions;
     public void addQuizSubmission(QuizSubmission quizSubmission){
         this.submissions.add(quizSubmission);
         quizSubmission.setQuiz(this);
     }
 
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL)
-    private List<Question> questions = new ArrayList<>();
-
+    private List<Question> questions;
     public List<Question> getQuestions() {
-        return questions;
+        return this.questions;
     }
 
     public void setQuestions(List<Question> questions) {
@@ -45,7 +44,7 @@ public class Quiz {
     }
 
     public Long getQuizID() {
-        return quizID;
+        return this.quizID;
     }
 
     public void setQuizID(Long quizID) {
@@ -53,7 +52,7 @@ public class Quiz {
     }
 
     public Course getCourseId() {
-        return course;
+        return this.course;
     }
 
     public void setCourseId(Course courseId) {
@@ -61,7 +60,7 @@ public class Quiz {
     }
 
     public String getQuizTitle() {
-        return quizTitle;
+        return this.quizTitle;
     }
 
     public void setQuizTitle(String quizTitle) {
@@ -69,7 +68,7 @@ public class Quiz {
     }
 
     public Time getQuizDuration() {
-        return quizDuration;
+        return this.quizDuration;
     }
 
     public void setQuizDuration(Time quizDuration) {
@@ -77,7 +76,7 @@ public class Quiz {
     }
 
     public List<QuizSubmission> getSubmissions() {
-        return submissions;
+        return this.submissions;
     }
 
     public void setSubmissions(List<QuizSubmission> submissions) {
@@ -85,7 +84,7 @@ public class Quiz {
     }
 
     public Course getCourse() {
-        return course;
+        return this.course;
     }
 
     public void setCourse(Course course) {

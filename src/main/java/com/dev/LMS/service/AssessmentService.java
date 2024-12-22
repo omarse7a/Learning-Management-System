@@ -86,7 +86,6 @@ public class AssessmentService {
         }
         if(!isFound)
             throw new IllegalStateException("This quiz dose not exit.");
-
         Collections.shuffle(allQuestions);
         List<Question> selectedQuestions = allQuestions.subList(0, Math.min(10, allQuestions.size()));
         currentQuiz.setQuestions(selectedQuestions);

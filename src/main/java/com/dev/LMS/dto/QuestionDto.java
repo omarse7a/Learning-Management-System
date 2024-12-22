@@ -19,35 +19,19 @@ import java.util.List;
 public class QuestionDto {
 
     private Long id;
-
     private QuestionType type;
-
     private String content;
-
     private List<Choice> choices;
-
     private String correctAnswer;
 
-    private Quiz quiz;
-
-    private Course course;
-
-    private List<QuizSubmission> submissions = new ArrayList<>();
-
-    private List<SubmittedQuestion> submittedQuestions = new ArrayList<>();
 
     public static QuestionDto toDto(Question question){
         return QuestionDto.builder().
                 choices(question.getChoices()).
                 id(question.getId()).
-                submittedQuestions(question.getSubmittedQuestions()).
                 content(question.getContent()).
                 type(question.getType()).
                 correctAnswer(question.getCorrectAnswer()).
-                quiz(question.getQuiz()).
-                course(question.getCourse()).
-                submissions(question.getSubmissions()).
-                submittedQuestions(question.getSubmittedQuestions()).
                 build();
     }
 
