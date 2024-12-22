@@ -22,7 +22,6 @@ public class QuestionDto {
     private QuestionType type;
     private String content;
     private List<Choice> choices;
-    private String correctAnswer;
 
 
     public static QuestionDto toDto(Question question){
@@ -31,8 +30,13 @@ public class QuestionDto {
                 id(question.getId()).
                 content(question.getContent()).
                 type(question.getType()).
-                correctAnswer(question.getCorrectAnswer()).
                 build();
+    }public static List<QuestionDto> listToDto(List<Question> questions){
+        List<QuestionDto> questionDtos = new ArrayList<>();
+        for (int i = 0; i < questions.size(); i++) {
+            questionDtos.add(toDto(questions.get(i)));
+        }
+        return questionDtos;
     }
 
 }

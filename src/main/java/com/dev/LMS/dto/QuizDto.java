@@ -12,6 +12,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.sql.Time;
+import java.util.ArrayList;
 import java.util.List;
 
 @NoArgsConstructor
@@ -22,13 +23,13 @@ public class QuizDto {
     private Long quizID;
     private String quizTitle;
     private Time quizDuration;
-    private List<Question> questions;
+    private List<QuestionDto> questions;
 public static QuizDto toDto(Quiz quiz){
     return QuizDto.builder().
             quizID(quiz.getQuizID()).
             quizDuration(quiz.getQuizDuration()).
             quizTitle(quiz.getQuizTitle()).
-            questions(quiz.getQuestions()).
+            questions(QuestionDto.listToDto(quiz.getQuestions())).
             build();
 }
 
