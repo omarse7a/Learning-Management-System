@@ -8,15 +8,13 @@ public class SubmittedQuestion {
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private long SubmittedQuestionId;
 
-    @Column(name = "student_answer",nullable = false)
+    @Column(name = "studentAnswer",nullable = false)
     private String studentAnswer;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "question_id")
     private Question question;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "submission_id")
     private QuizSubmission submission;
 
     public long getSubmittedQuestionId() {

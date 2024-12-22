@@ -114,7 +114,7 @@ public class AssessmentController {
             return new ResponseEntity<>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    @GetMapping("/take-quiz/{quizName}")
+    @GetMapping("/{quizName}/take-quiz") //tested and fixed
     public ResponseEntity<?> takeQuiz(
             @PathVariable("courseName") String courseName,
             @PathVariable("quizName") String quizName) {
@@ -138,7 +138,7 @@ public class AssessmentController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
-    @PostMapping("/submit-quiz/{quizName}")
+    @PostMapping("/{quizName}/submit-quiz")
     public ResponseEntity<?> submitQuiz(
             @PathVariable("courseName") String courseName,
             @PathVariable("quizName") String quizName,@RequestBody QuizSubmission quizSubmission) {

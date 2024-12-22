@@ -67,7 +67,7 @@ public class AssessmentService {
         Course course = courseRepository.findByName(courseName)
                 .orElseThrow(() -> new IllegalArgumentException("Course not found: " + courseName));
 
-        List<Question> allQuestions = course.getQuestions();
+        List<Question> allQuestions = new ArrayList<>(course.getQuestions());
         if (allQuestions.isEmpty()) {
             throw new IllegalStateException("No questions available for this course.");
         }
@@ -94,6 +94,8 @@ public class AssessmentService {
             questionDtos.add(QuestionDto.toDto(questions1.get(i)));
         }
         currentQuiz.setQuestions(selectedQuestions);
+        course.setQuiz(currentQuiz);
+        courseRepository.save(course);
         return QuizDto.toDto(currentQuiz);
     }
     public void submitQuiz(String courseName, String quizTitle,QuizSubmission quizSubmission,Student user){
@@ -104,20 +106,39 @@ public class AssessmentService {
             throw new IllegalStateException("No quizzes available for "+courseName+" course");
         quizSubmission.setStudent(user);
         Quiz currentQuiz = null;
+        int index = 0;
         boolean isFound = false;
         for (int i = 0; i < quizzes.size(); i++) {
             currentQuiz = quizzes.get(i);
             if(currentQuiz.getQuizTitle().equals(quizTitle)){
-                currentQuiz.addQuizSubmission(quizSubmission);
-                quizzes.set(i,currentQuiz);
-                course.setQuizzes(quizzes);
-                courseRepository.save(course);
+                index = i;
                 isFound = true;
                 break;
             }
         }
-        if(!isFound)
+        if(!isFound) {
             throw new IllegalStateException("This quiz dose not exit.");
+        }
+        if(quizSubmission.equals(null))
+            throw new IllegalStateException("Your submission is empty.");
+        SubmittedQuestion submittedQuestion = null;
+        List<SubmittedQuestion> submittedQuestions= new ArrayList<>();
+        for (int i = 0; i < quizSubmission.getSubmittedQuestions().size(); i++) {
+            submittedQuestion = quizSubmission.getSubmittedQuestions().get(i);
+            if (submittedQuestion.getStudentAnswer() == null) {
+                System.out.println(submittedQuestion.getStudentAnswer());
+                throw new IllegalStateException("Student answer cannot be null");
+            }
+            submittedQuestion.setSubmission(quizSubmission);
+            submittedQuestions.add(submittedQuestion);
+        }
+        quizSubmission.setSubmittedQuestions(submittedQuestions);
+        currentQuiz.addQuizSubmission(quizSubmission);
+        quizSubmission.setQuiz(currentQuiz);
+        quizzes.set(index,currentQuiz);
+        course.setQuizzes(quizzes);
+        courseRepository.save(course);
+
     }
 
     public void gradeQuiz(String quizTitle,String courseName){
