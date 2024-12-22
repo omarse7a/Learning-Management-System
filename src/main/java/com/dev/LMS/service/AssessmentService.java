@@ -331,7 +331,7 @@ public class AssessmentService {
                     throw new ApplicationContextException("Your submission wasn't graded yet.");
             }
         }
-        throw new IllegalStateException("You have no submissions for this assignment yet.");
+        throw new IllegalStateException("You have no submissions for this assignment .");
     }
 
     public String send_feedback(Student student) {

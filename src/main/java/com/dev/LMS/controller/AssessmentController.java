@@ -265,6 +265,12 @@ public class AssessmentController {
             String response = assessmentService.uploadSubmissionFile(file, assignment, student);
             return ResponseEntity.ok(response);
         }
+        catch (ApplicationContextException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Unauthorized to submit assignment: " + e.getMessage());
+        }
+        catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
         catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
@@ -287,6 +293,12 @@ public class AssessmentController {
             Assignment assignment = assessmentService.getAssignment(course, user, assignmentId);
             List<AssignmentSubmissionDto> submissionsDto = assessmentService.getSubmissions(assignment);
             return ResponseEntity.ok(submissionsDto);
+        }
+        catch (ApplicationContextException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Unauthorized to view assignment submissions list: " + e.getMessage());
+        }
+        catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
         catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
@@ -312,6 +324,12 @@ public class AssessmentController {
             byte[] submissionFile = assessmentService.downloadSubmissionFile(assignment, submissionId);
 
             return ResponseEntity.status(200).contentType(MediaType.APPLICATION_PDF).body(submissionFile);
+        }
+        catch (ApplicationContextException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Unauthorized to view assignment submissions: " + e.getMessage());
+        }
+        catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
         catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
@@ -339,6 +357,12 @@ public class AssessmentController {
             AssignmentSubmissionDto gradedSubmission = assessmentService.setAssignmentGrade(submission, course, gradeMap);
             return ResponseEntity.status(HttpStatus.CREATED).body(gradedSubmission);
         }
+        catch (ApplicationContextException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Unauthorized to grade assignment submissions: " + e.getMessage());
+        }
+        catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
         catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
@@ -365,6 +389,9 @@ public class AssessmentController {
             Map<String, Integer> response = new HashMap<>();
             response.put("grade", grade);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        }
+        catch (ApplicationContextException | IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
         catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
