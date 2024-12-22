@@ -1,6 +1,5 @@
 package com.dev.LMS.model;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -31,7 +30,7 @@ public class Assignment {
     private Course course;
 
     @OneToMany(mappedBy = "assignment", cascade = CascadeType.ALL)
-    private List<AssignmentSubmisson> submissions = new ArrayList<>();
+    private List<AssignmentSubmission> submissions = new ArrayList<>();
 
     public int getAssignmentId() {
         return assignment_id;
@@ -73,11 +72,11 @@ public class Assignment {
         this.course = course;
     }
 
-    public List<AssignmentSubmisson> getSubmissions() {
+    public List<AssignmentSubmission> getSubmissions() {
         return submissions;
     }
 
-    public void setSubmissions(List<AssignmentSubmisson> submissions) {
+    public void setSubmissions(List<AssignmentSubmission> submissions) {
         this.submissions = submissions;
     }
 

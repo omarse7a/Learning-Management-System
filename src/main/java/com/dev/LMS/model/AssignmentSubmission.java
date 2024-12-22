@@ -1,14 +1,12 @@
 package com.dev.LMS.model;
 import jakarta.persistence.*;
-import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.io.File;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "assignment_submissions")
-public class AssignmentSubmisson {
+public class AssignmentSubmission {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int submissionId;
@@ -40,7 +38,7 @@ public class AssignmentSubmisson {
     @Column(name = "submission_date")
     private LocalDateTime submissionDate;
 
-    public AssignmentSubmisson() {
+    public AssignmentSubmission() {
     }
 
     public int getSubmissionId() {

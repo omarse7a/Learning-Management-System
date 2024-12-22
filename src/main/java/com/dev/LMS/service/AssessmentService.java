@@ -7,22 +7,29 @@ import com.dev.LMS.dto.QuizDto;
 import com.dev.LMS.model.*;
 import com.dev.LMS.repository.CourseRepository;
 import com.dev.LMS.repository.UserRepository;
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContextException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.sql.Time;
 import java.util.*;
 
-@AllArgsConstructor
 @Service
 public class AssessmentService {
     private CourseRepository courseRepository;
     private UserRepository userRepository;
-    private final String UPLOAD_DIR = "../../../../../resources/uploads/assignment-submissions/";
+    @Value( "${file.upload.base-path.assignment-submissions}")
+    private String UPLOAD_DIR;
+
+    // replaced the all args constructor, because UPLOAD_DIR shouldn't be initialized
+    public AssessmentService(CourseRepository courseRepository, UserRepository userRepository)  {
+        this.courseRepository = courseRepository;
+        this.userRepository = userRepository;
+    }
+
     public void createQuestion(String courseName , Question question ){
         Course course = courseRepository.findByName(courseName)
              .orElseThrow(() -> new IllegalArgumentException("Course not found: " + courseName));
@@ -191,14 +198,14 @@ public class AssessmentService {
         throw new IllegalStateException("There is no submission for this student: "+ user.getName());
     }
 
-    public boolean addAssignment(Course course, Assignment assignment, Instructor instructor){
+    public AssignmentDto addAssignment(Course course, Assignment assignment, Instructor instructor){
         Set<Course> instructorCourses = instructor.getCreatedCourses();
         if(instructorCourses.contains(course)){
             course.addAssignment(assignment);
             courseRepository.save(course);
-            return true;
+            return new AssignmentDto(assignment);
         }
-        return false;
+        throw new IllegalStateException("You are not authorized to add assignments to this course");
     }
 
     public List<AssignmentDto> getAssignments(Course course, User user){
@@ -232,11 +239,15 @@ public class AssessmentService {
             Set<Course> instructorCourses = instructor.getCreatedCourses();
             if(instructorCourses.contains(course))
                 assignments = course.getAssignments();
+            else
+                throw new ApplicationContextException("You are not the instructor of this course");
         } else {
             Student student = (Student) user;
             Set<Course> studentCourses = student.getEnrolled_courses();
             if (studentCourses.contains(course))
                 assignments = course.getAssignments();
+            else
+                throw new ApplicationContextException("You are not enrolled in this course");
         }
         for (Assignment assignment : assignments) {
             if(assignment.getAssignmentId() == assignmentId)
@@ -249,7 +260,7 @@ public class AssessmentService {
         String filePath = UPLOAD_DIR + file.getOriginalFilename();
 
         // database part
-        AssignmentSubmisson a = new AssignmentSubmisson();
+        AssignmentSubmission a = new AssignmentSubmission();
         a.setFileName(file.getOriginalFilename());
         a.setFileType(file.getContentType());
         a.setFilePath(filePath);
@@ -263,25 +274,35 @@ public class AssessmentService {
         try {
             file.transferTo(new File(filePath));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Unable to store the file");
         }
         return "file successfully uploaded to " + filePath;
     }
 
     public List<AssignmentSubmissionDto> getSubmissions(Assignment assignment){
         List<AssignmentSubmissionDto> dtos = new ArrayList<>();
-        List<AssignmentSubmisson> submissions = assignment.getSubmissions();
-        for (AssignmentSubmisson submisson : submissions) {
+        List<AssignmentSubmission> submissions = assignment.getSubmissions();
+        for (AssignmentSubmission submisson : submissions) {
             dtos.add(new AssignmentSubmissionDto(submisson));
         }
         return dtos;
     }
 
+    public AssignmentSubmission getSubmission(Assignment assignment, int submissionId){
+        List<AssignmentSubmission> submissions = assignment.getSubmissions();
+        for (AssignmentSubmission submission : submissions) {
+            if(submission.getSubmissionId() == submissionId){
+                return submission;
+            }
+        }
+        throw new IllegalStateException("Submission not found");
+    }
+
     public byte[] downloadSubmissionFile(Assignment assignment, int submissionId){ // String fileName
         // retrieving the assignment submission object by ID
-        List<AssignmentSubmisson> submissions = assignment.getSubmissions();
-        AssignmentSubmisson sub = new AssignmentSubmisson();
-        for (AssignmentSubmisson submisson : submissions) {
+        List<AssignmentSubmission> submissions = assignment.getSubmissions();
+        AssignmentSubmission sub = new AssignmentSubmission();
+        for (AssignmentSubmission submisson : submissions) {
             if(submisson.getSubmissionId() == submissionId){
                 sub = submisson;
                 break;
@@ -293,21 +314,29 @@ public class AssessmentService {
             byte[] submissionData = Files.readAllBytes(new File(filePath).toPath());
             return submissionData;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Unable to load the file");
         }
     }
 
-    public void setAssignmentGrade(Assignment assignment) {
+    public AssignmentSubmissionDto setAssignmentGrade(AssignmentSubmission a, Course course, Map<String, Integer> gradeMap) {
+        a.setGrade(gradeMap.get("grade"));
+        a.setGraded(true);
+        courseRepository.save(course);
+        return new AssignmentSubmissionDto(a);
+    }
+    public int getAssignmentGrade(Assignment assignment, Student student) {
+        List<AssignmentSubmission> studentSubmissions = student.getAssignmentSubmissions();
+        for (AssignmentSubmission submission : studentSubmissions) {
+            if(submission.getAssignment().equals(assignment)){
+                if(submission.isGraded())
+                    return submission.getGrade();
+                else
+                    throw new ApplicationContextException("Your submission wasn't graded yet.");
+            }
+        }
+        throw new IllegalStateException("You have no submissions for this assignment .");
+    }
 
-    }
-    public int getAssignmentGrade(Assignment assignment) {
-        return 0;
-    }
-
-    public List<Lesson> getLessonsAttended(Course course){
-        List<Lesson> lessonList=null;
-        return lessonList;
-    }
     public String send_feedback(Student student) {
         return "11";
     }
