@@ -187,10 +187,6 @@ public class AssessmentService {
         }
         throw new IllegalStateException("There is no submission for this student: "+ user.getName());
     }
-    public  List<Assignment> getAssignmentSub(Assignment assignment){
-        List<Assignment> assignmentList = null;
-        return assignmentList;
-    }
 
     public boolean addAssignment(Course course, Assignment assignment, Instructor instructor){
         Set<Course> instructorCourses = instructor.getCreatedCourses();
@@ -203,17 +199,21 @@ public class AssessmentService {
     }
 
     public List<AssignmentDto> getAssignments(Course course, User user){
-        List<Assignment> assignments = null;
+        List<Assignment> assignments = List.of();
         if(user instanceof Instructor){
             Instructor instructor = (Instructor) user;
             Set<Course> instructorCourses = instructor.getCreatedCourses();
             if(instructorCourses.contains(course))
                 assignments = course.getAssignments();
+            else
+                throw new IllegalStateException("You are not the instructor of this course");
         } else {
             Student student = (Student) user;
-            Set<Course> instructorCourses = student.getEnrolled_courses();
-            if (instructorCourses.contains(course))
+            Set<Course> studentCourses = student.getEnrolled_courses();
+            if (studentCourses.contains(course))
                 assignments = course.getAssignments();
+            else
+                throw new IllegalStateException("You are not enrolled in this course");
         }
         List<AssignmentDto> assignmentDtos = new ArrayList<>();
         for (Assignment assignment : assignments) {
@@ -231,15 +231,15 @@ public class AssessmentService {
                 assignments = course.getAssignments();
         } else {
             Student student = (Student) user;
-            Set<Course> instructorCourses = student.getEnrolled_courses();
-            if (instructorCourses.contains(course))
+            Set<Course> studentCourses = student.getEnrolled_courses();
+            if (studentCourses.contains(course))
                 assignments = course.getAssignments();
         }
         for (Assignment assignment : assignments) {
             if(assignment.getAssignmentId() == assignmentId)
                 return assignment;
         }
-        return null;
+        throw new IllegalStateException("Assignment not found");
     }
 
     public String uploadSubmissionFile(MultipartFile file, Assignment assignment, Student student){

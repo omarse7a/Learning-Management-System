@@ -10,6 +10,7 @@ import com.dev.LMS.dto.LessonResourceDto;
 import com.dev.LMS.dto.StudentDto;
 import com.dev.LMS.model.*;
 import com.dev.LMS.repository.CourseRepository;
+import com.dev.LMS.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,12 +19,14 @@ import org.springframework.web.multipart.MultipartFile;
 public class CourseService {
     private final CourseRepository courseRepository;
     private final UserService userService;
+    private final UserRepository userRepository;
     @Value("${file.upload.base-path.lesson-resources}") //check application.yml
     private Path resourcesPath ;
 
-    public CourseService(CourseRepository courseRepository, UserService userService)  {
+    public CourseService(CourseRepository courseRepository, UserService userService, UserRepository userRepository)  {
         this.courseRepository = courseRepository;
         this.userService = userService;
+        this.userRepository = userRepository;
     }
 
     public Course createCourse(Course course, Instructor instructor){
@@ -161,6 +164,7 @@ public class CourseService {
             throw new IllegalStateException("You are already enrolled in this course");
         course.addStudent(student);
         courseRepository.save(course);
+        userRepository.save(student);
         Set<Course> enrolledCourses = student.getEnrolled_courses();
         Set<CourseDto> enrolledCoursesDto = new HashSet<>();
         for (Course c : enrolledCourses) {
