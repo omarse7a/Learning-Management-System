@@ -29,3 +29,4 @@ file:
   upload:
     base-path:
       lesson-resources: "${user.dir}/src/main/resources/upload/lesson_resources"
+      assignment-submissions: "${user.dir}/src/main/resources/upload/assignment-submissions"

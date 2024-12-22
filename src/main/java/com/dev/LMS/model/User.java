@@ -32,10 +32,6 @@ public abstract class User {
     private Role role;
 
 
-    @ManyToMany(mappedBy = "enrolled_students")
-    private Set<Course> enrolled_courses = new HashSet<>();
-
-
     public User() {
     }
 
