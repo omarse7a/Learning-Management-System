@@ -86,9 +86,13 @@ public class AssessmentService {
         }
         if(!isFound)
             throw new IllegalStateException("This quiz dose not exit.");
-
         Collections.shuffle(allQuestions);
         List<Question> selectedQuestions = allQuestions.subList(0, Math.min(10, allQuestions.size()));
+        List<Question> questions1 = selectedQuestions;
+        List<QuestionDto> questionDtos = new ArrayList<>();
+        for (int i = 0; i < questions1.size(); i++) {
+            questionDtos.add(QuestionDto.toDto(questions1.get(i)));
+        }
         currentQuiz.setQuestions(selectedQuestions);
         return QuizDto.toDto(currentQuiz);
     }
@@ -102,10 +106,11 @@ public class AssessmentService {
         Quiz currentQuiz = null;
         boolean isFound = false;
         for (int i = 0; i < quizzes.size(); i++) {
-            Quiz temp = quizzes.get(i);
-            if(temp.getQuizTitle().equals(quizTitle)){
+            currentQuiz = quizzes.get(i);
+            if(currentQuiz.getQuizTitle().equals(quizTitle)){
                 currentQuiz.addQuizSubmission(quizSubmission);
                 quizzes.set(i,currentQuiz);
+                course.setQuizzes(quizzes);
                 courseRepository.save(course);
                 isFound = true;
                 break;
@@ -162,11 +167,9 @@ public class AssessmentService {
         if(quizzes.isEmpty()) throw new IllegalArgumentException("No quizzes available for "+courseName+" course");
         Quiz currentQuiz = null;
         boolean isFound = false;
-        int index = 0;
         for (int i = 0; i < quizzes.size(); i++) {
             Quiz temp = quizzes.get(i);
             if(temp.getQuizTitle().equals(quizTitle)){
-                index = i;
                 currentQuiz = temp;
                 isFound = true;
                 break;

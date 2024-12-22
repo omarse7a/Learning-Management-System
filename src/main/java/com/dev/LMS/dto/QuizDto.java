@@ -1,6 +1,7 @@
 package com.dev.LMS.dto;
 
 import com.dev.LMS.model.Course;
+import com.dev.LMS.model.Question;
 import com.dev.LMS.model.Quiz;
 import jakarta.persistence.Column;
 import jakarta.persistence.JoinColumn;
@@ -11,6 +12,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.sql.Time;
+import java.util.ArrayList;
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,15 +21,16 @@ import java.sql.Time;
 @Data
 public class QuizDto {
     private Long quizID;
-    private Course course;
     private String quizTitle;
     private Time quizDuration;
+    private List<QuestionDto> questions;
 public static QuizDto toDto(Quiz quiz){
     return QuizDto.builder().
             quizID(quiz.getQuizID()).
             quizDuration(quiz.getQuizDuration()).
-            course(quiz.getCourse()).
-            quizTitle(quiz.getQuizTitle()).build();
+            quizTitle(quiz.getQuizTitle()).
+            questions(QuestionDto.listToDto(quiz.getQuestions())).
+            build();
 }
 
 }
