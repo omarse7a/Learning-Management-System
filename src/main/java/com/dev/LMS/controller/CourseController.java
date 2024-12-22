@@ -98,7 +98,7 @@ public class CourseController
 
           }
           if (user instanceof Student){
-              Student student = (Student) user;
+               Student student = (Student) user;
               Set<Course> enrolledCourses = courseService.getEnrolledCourses(student);
               if(enrolledCourses == null){
                   return ResponseEntity.ok().body("No courses found");
@@ -203,7 +203,7 @@ public class CourseController
 
     }
 
-    @PostMapping("/course/{courseName}/lessons/{lessonId}/addResource")
+    @PostMapping("/course/{courseName}/lessons/{lessonId}/add-resource")
     public ResponseEntity<?> addResource(@PathVariable("courseName") String courseName,@PathVariable("lessonId") int lessonId,@RequestParam MultipartFile file){
         try{
             Course course = courseService.getCourse(courseName);

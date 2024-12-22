@@ -10,6 +10,7 @@ import com.dev.LMS.dto.LessonResourceDto;
 import com.dev.LMS.dto.StudentDto;
 import com.dev.LMS.model.*;
 import com.dev.LMS.repository.CourseRepository;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,12 +19,15 @@ import org.springframework.web.multipart.MultipartFile;
 public class CourseService {
     private final CourseRepository courseRepository;
     private final UserService userService;
+
     @Value("${file.upload.base-path.lesson-resources}") //check application.yml
     private Path resourcesPath ;
 
     public CourseService(CourseRepository courseRepository, UserService userService)  {
         this.courseRepository = courseRepository;
         this.userService = userService;
+
+
     }
 
     public Course createCourse(Course course, Instructor instructor){
@@ -177,7 +181,8 @@ public class CourseService {
         Set<Student> students = course.getEnrolled_students();
         Set<StudentDto> studentDtos = new HashSet<>();
         for (Student s : students) {
-            studentDtos.add(new StudentDto(s));
+            StudentDto studentDto = new StudentDto(s);
+            studentDtos.add(studentDto);
         }
         return studentDtos;
     }
