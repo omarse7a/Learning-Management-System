@@ -8,6 +8,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import com.dev.LMS.dto.CourseDto;
+import com.dev.LMS.dto.LessonDto;
 import com.dev.LMS.dto.LessonResourceDto;
 import com.dev.LMS.dto.StudentDto;
 import com.dev.LMS.model.*;
@@ -223,5 +224,22 @@ public class CourseService {
         courseRepository.save(course);
 
         return otp;
+    }
+
+    public LessonDto attendLesson(Course course, Student student, Lesson lesson, int givenOtp) {
+        LessonOTP lessonOTP = lesson.getLessonOTP();
+        if (lessonOTP.getOtpValue() == givenOtp) {
+            if (lessonOTP.getExpireAt().isAfter(LocalDateTime.now())) {
+                lesson.addAttendee(student);
+                courseRepository.save(course);
+                return new LessonDto(lesson);
+            }
+            else{
+                throw new IllegalStateException("OTP expired");
+            }
+        }
+        else {
+            throw new IllegalStateException("Incorrect OTP");
+        }
     }
 }

@@ -50,7 +50,6 @@ public class Student extends User{
 
     public void attendLesson(Lesson lesson) {
         this.lessonAttended.add(lesson);
-        lesson.addAttendee(this);
     }
 
     public void enrollCourse(Course course) {

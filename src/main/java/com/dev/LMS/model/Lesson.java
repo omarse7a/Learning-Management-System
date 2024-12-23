@@ -57,6 +57,8 @@ public class Lesson {
 
     public void addAttendee(@NotNull Student user) {
             this.attendees.add(user);
+            user.attendLesson(this);
+
     }
 
 

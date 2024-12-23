@@ -1,18 +1,16 @@
 package com.dev.LMS.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper=false)
+//Don't change to Data gives error
+@Getter
+@Setter
 public class LessonOTP {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,7 +19,10 @@ public class LessonOTP {
 
     private LocalDateTime expireAt;
 
+
     @OneToOne
     @JoinColumn(name = "lesson_id")
     private Lesson lesson;
+
+
 }
