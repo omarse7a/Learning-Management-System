@@ -428,6 +428,36 @@ public class CourseController
     }
 
 
+    @GetMapping("/course/{courseName}/lessons/{lessonId}/attendanceList")
+    public ResponseEntity<?> getAttendance(@PathVariable("courseName") String courseName,@PathVariable int lessonId){
+        try {
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userService.getUserByEmail(email);
+
+            if (user == null) {
+                return ResponseEntity.badRequest().body("User not found, Please register or login first");
+            }
+            if (!(user instanceof Instructor)) {
+                return ResponseEntity.badRequest().body("You are not authorized");
+            }
+
+            Instructor instructor = (Instructor) user;
+            Course course = courseService.getCourse(courseName);
+
+            if (course == null) return ResponseEntity.badRequest().body("Course not found");
+            Lesson lesson = courseService.getLessonbyId(course, lessonId);
+
+            if (lesson == null) return ResponseEntity.badRequest().body("Lesson id not found");
+
+            List<StudentDto> attendanceList = courseService.getAttendance(lesson);
+            return ResponseEntity.ok(attendanceList);
+
+        }
+        catch (Exception e){
+            return ResponseEntity.badRequest().body("An error occurred" + e.getMessage());
+        }
+    }
+
 
 
 }

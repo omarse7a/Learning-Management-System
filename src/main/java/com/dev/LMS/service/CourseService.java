@@ -253,4 +253,13 @@ public class CourseService {
         }
         return lessonDtos;
     }
+
+    public List<StudentDto> getAttendance(Lesson lesson) {
+        Set<Student> students = lesson.getAttendees();
+        List<StudentDto> studentDtos = new ArrayList<>();
+        for (Student student : students) {
+            studentDtos.add(new StudentDto(student));
+        }
+        return studentDtos;
+    }
 }
