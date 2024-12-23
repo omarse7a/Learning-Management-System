@@ -25,4 +25,11 @@ public class AssignmentDto {
         this.courseName = assignment.getCourse().getName();
         this.numberOfSubmissions = assignment.getSubmissions().size();
     }
+
+    public AssignmentDto(String title, String description, String courseName, LocalDateTime dueDate) {
+        this.title = title;
+        this.description = description;
+        this.courseName = courseName;
+        this.dueDate = dueDate;
+    }
 }

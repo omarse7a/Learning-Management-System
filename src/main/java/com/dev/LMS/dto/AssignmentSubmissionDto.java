@@ -28,4 +28,18 @@ public class AssignmentSubmissionDto {
         isGraded = sub.isGraded();
         submissionDate = sub.getSubmissionDate();
     }
+
+    public AssignmentSubmissionDto(int submissionId, String assignmentTitle, int studentId, String studentName,
+                                   String fileName, String fileType, int grade, boolean isGraded,
+                                   LocalDateTime submissionDate) {
+        this.submissionId = submissionId;
+        this.assignmentTitle = assignmentTitle;
+        this.studentId = studentId;
+        this.studentName = studentName;
+        this.fileName = fileName;
+        this.fileType = fileType;
+        this.grade = grade;
+        this.isGraded = isGraded;
+        this.submissionDate = submissionDate;
+    }
 }
