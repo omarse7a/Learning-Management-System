@@ -193,14 +193,9 @@ public class Course {
         user.unenrollCourse(this);
     }
     public void addStudent(@NotNull Student user) {
-        if (user.getRole() == Role.STUDENT) {
             this.enrolled_students.add(user);
             user.enrollCourse(this);
 
-        }
-        else {
-            throw new IllegalArgumentException("Only students can enroll in courses");
-        }
     }
 
     //for assignments
