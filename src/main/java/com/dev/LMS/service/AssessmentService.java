@@ -1,13 +1,10 @@
 package com.dev.LMS.service;
 
-import com.dev.LMS.dto.AssignmentDto;
-import com.dev.LMS.dto.AssignmentSubmissionDto;
-import com.dev.LMS.dto.QuestionDto;
-import com.dev.LMS.dto.QuizDto;
+import com.dev.LMS.dto.*;
 import com.dev.LMS.model.*;
 import com.dev.LMS.repository.CourseRepository;
 import com.dev.LMS.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.AllArgsConstructor;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,22 +14,15 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
 
+@AllArgsConstructor
 @Service
 public class AssessmentService {
     private CourseRepository courseRepository;
     private UserRepository userRepository;
-    @Value( "${file.upload.base-path.assignment-submissions}")
-    private String UPLOAD_DIR;
-
-    // replaced the all args constructor, because UPLOAD_DIR shouldn't be initialized
-    public AssessmentService(CourseRepository courseRepository, UserRepository userRepository)  {
-        this.courseRepository = courseRepository;
-        this.userRepository = userRepository;
-    }
-
+    private final String UPLOAD_DIR = "../../../../../resources/uploads/assignment-submissions/";
     public void createQuestion(String courseName , Question question ){
         Course course = courseRepository.findByName(courseName)
-             .orElseThrow(() -> new IllegalArgumentException("Course not found: " + courseName));
+                .orElseThrow(() -> new IllegalArgumentException("Course not found: " + courseName));
         course.addQuestion(question);
         courseRepository.save(course);
     }
@@ -70,11 +60,11 @@ public class AssessmentService {
         courseRepository.save(course);
     }
     // change parameter Course-> CourseId
-    public QuizDto generateQuiz(String courseName, String quizTitle) {
+    public QuizSubmissionDto generateQuiz(String courseName, String quizTitle , Student student) {
         Course course = courseRepository.findByName(courseName)
                 .orElseThrow(() -> new IllegalArgumentException("Course not found: " + courseName));
 
-        List<Question> allQuestions = course.getQuestions();
+        List<Question> allQuestions = new ArrayList<>(course.getQuestions());
         if (allQuestions.isEmpty()) {
             throw new IllegalStateException("No questions available for this course.");
         }
@@ -83,48 +73,87 @@ public class AssessmentService {
             throw new IllegalStateException("No quizzes available for "+courseName+" course");
         Quiz currentQuiz = null;
         boolean isFound = false;
+        int index = 0;
         for (int i = 0; i < quizzes.size(); i++) {
             Quiz temp = quizzes.get(i);
             if(temp.getQuizTitle().equals(quizTitle)){
                 currentQuiz = temp;
                 isFound = true;
+                index = i;
                 break;
             }
         }
         if(!isFound)
             throw new IllegalStateException("This quiz dose not exit.");
         Collections.shuffle(allQuestions);
-        List<Question> selectedQuestions = allQuestions.subList(0, Math.min(10, allQuestions.size()));
-        List<Question> questions1 = selectedQuestions;
-        List<QuestionDto> questionDtos = new ArrayList<>();
-        for (int i = 0; i < questions1.size(); i++) {
-            questionDtos.add(QuestionDto.toDto(questions1.get(i)));
+        List<Question> selectedQuestions = allQuestions.subList(0, Math.min(2, allQuestions.size()));
+        QuizSubmission quizSubmission = new QuizSubmission();
+        quizSubmission.setQuestions(selectedQuestions);
+        for(Question q:selectedQuestions){
+            q.addSubmission(quizSubmission);
         }
-        currentQuiz.setQuestions(selectedQuestions);
-        return QuizDto.toDto(currentQuiz);
+        quizSubmission.setSubmittedQuestions(new ArrayList<>());
+        quizSubmission.setGrade(0);
+        quizSubmission.setStudent(student);
+        student.addQuizSubmission(quizSubmission);
+        quizSubmission.setQuiz(currentQuiz);
+        currentQuiz.addQuizSubmission(quizSubmission);
+        course.setQuiz(currentQuiz);
+
+        courseRepository.save(course);
+        System.out.println(QuestionDto.listToDto(student.getQuizSubmissions().get(0).getQuestions())+"\n\n\n\n\n\n\n\n\n");
+        return QuizSubmissionDto.toDto(quizSubmission);
     }
-    public void submitQuiz(String courseName, String quizTitle,QuizSubmission quizSubmission,Student user){
+    public void submitQuiz(String courseName, String quizTitle,List<SubmittedQuestion> studentSubmittedQuestions,Student student){
+        System.out.println(QuestionDto.listToDto(student.getQuizSubmissions().get(0).getQuestions())+"\n\n\n\n\n\n\n\n\n");
         Course course = courseRepository.findByName(courseName)
                 .orElseThrow(() -> new IllegalArgumentException("Course not found: " + courseName));
         List<Quiz> quizzes = course.getQuizzes();
         if(quizzes.isEmpty())
             throw new IllegalStateException("No quizzes available for "+courseName+" course");
-        quizSubmission.setStudent(user);
         Quiz currentQuiz = null;
+        int index = 0;
         boolean isFound = false;
         for (int i = 0; i < quizzes.size(); i++) {
             currentQuiz = quizzes.get(i);
             if(currentQuiz.getQuizTitle().equals(quizTitle)){
-                currentQuiz.addQuizSubmission(quizSubmission);
-                quizzes.set(i,currentQuiz);
-                course.setQuizzes(quizzes);
-                courseRepository.save(course);
+                index = i;
                 isFound = true;
                 break;
             }
         }
-        if(!isFound)
+        if(!isFound) {
             throw new IllegalStateException("This quiz dose not exit.");
+        }
+        List<QuizSubmission> quizSubmissions = course.getQuizzes().get(index).getSubmissions();
+        QuizSubmission quizSubmission = null;
+        for (QuizSubmission q : quizSubmissions){
+            if(q.getStudent().getId() == student.getId())
+                quizSubmission = q;
+        }
+        if(quizSubmission == null)
+            throw new IllegalStateException("there is no submission.");
+        if(studentSubmittedQuestions == null || studentSubmittedQuestions.isEmpty())
+            throw new IllegalStateException("Your submission is empty.");
+        if(quizSubmission.getQuestions().isEmpty())
+            throw new IllegalStateException("Question is empty.");
+        SubmittedQuestion submittedQuestion = null;
+        List<SubmittedQuestion> submittedQuestions= new ArrayList<>();
+        for (int i = 0; i < studentSubmittedQuestions.size(); i++) {
+            submittedQuestion = studentSubmittedQuestions.get(i);
+            if (submittedQuestion.getStudentAnswer() == null) {
+                System.out.println(submittedQuestion.getStudentAnswer());
+                throw new IllegalStateException("Student answer cannot be null");
+            }
+            submittedQuestion.setSubmission(quizSubmission);
+            submittedQuestion.setQuestion(quizSubmission.getQuestions().get(i));
+            submittedQuestions.add(submittedQuestion);
+        }
+        quizSubmission.setSubmittedQuestions(submittedQuestions);
+        currentQuiz.addQuizSubmission(quizSubmission);
+        quizzes.set(index,currentQuiz);
+        course.setQuizzes(quizzes);
+        courseRepository.save(course);
     }
 
     public void gradeQuiz(String quizTitle,String courseName){
@@ -158,16 +187,16 @@ public class AssessmentService {
                 Question currentQuestion = CurrentSubmittedQuestion.getQuestion();
                 if(CurrentSubmittedQuestion.getStudentAnswer().
                         equals(currentQuestion.getCorrectAnswer()))
-                   grade++;
+                    grade++;
             }
             quizSubmissions.get(i).setGrade(grade);
-            quizSubmissions.get(i).setGraded(true);
         }
         currentQuiz.setSubmissions(quizSubmissions);
         quizzes.set(index,currentQuiz);
         courseRepository.save(course);
     }
     public int getQuizGrade(String quizTitle,String courseName , Student user) {
+        gradeQuiz(quizTitle,courseName);
         Course course = courseRepository.findByName(courseName)
                 .orElseThrow(() -> new IllegalArgumentException("Course not found: " + courseName));
         List<Quiz> quizzes = course.getQuizzes();
@@ -187,16 +216,16 @@ public class AssessmentService {
         List<QuizSubmission> quizSubmissions = currentQuiz.getSubmissions();
         for (int i = 0; i < quizSubmissions.size(); i++) {
             if(quizSubmissions.get(i).getStudent().equals(user)){
-                if(quizSubmissions.get(i).getGraded()){
-                    return quizSubmissions.get(i).getGrade();
-                }else{
-                    throw new IllegalArgumentException("Not graded yet");
-                }
-
+                return quizSubmissions.get(i).getGrade();
             }
         }
         throw new IllegalStateException("There is no submission for this student: "+ user.getName());
     }
+    public  List<Assignment> getAssignmentSub(Assignment assignment){
+        List<Assignment> assignmentList = null;
+        return assignmentList;
+    }
+
 
     public AssignmentDto addAssignment(Course course, Assignment assignment, Instructor instructor){
         Set<Course> instructorCourses = instructor.getCreatedCourses();
@@ -265,8 +294,9 @@ public class AssessmentService {
         a.setFileType(file.getContentType());
         a.setFilePath(filePath);
         a.setAssignment(assignment);
+      
         // sets the submission's student and adds the submission to the student's submissions list
-        student.addSubmission(a);
+        student.addAssignmentSubmission(a);
         // saving through user repo
         userRepository.save(student);
 

@@ -15,8 +15,7 @@ public class Quiz {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long quizID;
-
-    @ManyToOne
+    @ManyToOne( cascade = CascadeType.PERSIST)
     @JoinColumn(name= "course_id")
     private Course course;
 
@@ -26,21 +25,11 @@ public class Quiz {
 //    @Column(nullable = false)
     private Time quizDuration;
 
-    @OneToMany(mappedBy ="quiz", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy ="quiz", cascade = CascadeType.PERSIST)
     private List<QuizSubmission> submissions;
     public void addQuizSubmission(QuizSubmission quizSubmission){
         this.submissions.add(quizSubmission);
         quizSubmission.setQuiz(this);
-    }
-
-    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL)
-    private List<Question> questions;
-    public List<Question> getQuestions() {
-        return this.questions;
-    }
-
-    public void setQuestions(List<Question> questions) {
-        this.questions = questions;
     }
 
     public Long getQuizID() {
@@ -89,5 +78,12 @@ public class Quiz {
 
     public void setCourse(Course course) {
         this.course = course;
+    }
+    public QuizSubmission findbyStudent(Student student){
+        for (int i = 0; i < this.getSubmissions().size(); i++){
+            if((this.getSubmissions().get(i).getStudent()).equals(student))
+                return this.getSubmissions().get(i);
+        }
+        return null;
     }
 }

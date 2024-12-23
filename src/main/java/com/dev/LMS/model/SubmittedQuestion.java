@@ -8,15 +8,13 @@ public class SubmittedQuestion {
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private long SubmittedQuestionId;
 
-    @Column(name = "student_answer",nullable = false)
+    @Column(name = "studentAnswer",nullable = false)
     private String studentAnswer;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "question_id")
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
     private Question question;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "submission_id")
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
     private QuizSubmission submission;
 
     public long getSubmittedQuestionId() {
@@ -28,7 +26,7 @@ public class SubmittedQuestion {
     }
 
     public String getStudentAnswer() {
-        return studentAnswer;
+        return this.studentAnswer;
     }
 
     public void setStudentAnswer(String studentAnswer) {
@@ -36,7 +34,7 @@ public class SubmittedQuestion {
     }
 
     public Question getQuestion() {
-        return question;
+        return this.question;
     }
 
     public void setQuestion(Question question) {
@@ -44,7 +42,7 @@ public class SubmittedQuestion {
     }
 
     public QuizSubmission getSubmission() {
-        return submission;
+        return this.submission;
     }
 
     public void setSubmission(QuizSubmission submission) {

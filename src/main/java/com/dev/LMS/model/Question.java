@@ -24,28 +24,19 @@ public class Question {
     @Column(nullable = false)
     private String content;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.PERSIST)
     private List<Choice> choices;
 
     @Column
     private String correctAnswer;
-    @ManyToOne
-    private Quiz quiz;
 
-    public Quiz getQuiz() {
-        return quiz;
-    }
 
-    public void setQuiz(Quiz quiz) {
-        this.quiz = quiz;
-    }
-
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "course_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Course course;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
     @JoinTable(
             name = "submissions",
             joinColumns = @JoinColumn(name = "question_id"),
@@ -53,8 +44,7 @@ public class Question {
     )
     private List<QuizSubmission> submissions = new ArrayList<>();
 
-
-    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "question", cascade = CascadeType.PERSIST)
     private List<SubmittedQuestion> submittedQuestions = new ArrayList<>();
 
 
@@ -146,5 +136,9 @@ public class Question {
                 ", correctAnswer='" + correctAnswer + '\'' +
                 ", course=" + course +
                 '}';
+    }
+
+    public void addSubmission(QuizSubmission quizSubmission) {
+        this.submissions.add(quizSubmission);
     }
 }

@@ -1,9 +1,6 @@
 package com.dev.LMS.controller;
 
-import com.dev.LMS.dto.AssignmentDto;
-import com.dev.LMS.dto.AssignmentSubmissionDto;
-import com.dev.LMS.dto.QuestionDto;
-import com.dev.LMS.dto.QuizDto;
+import com.dev.LMS.dto.*;
 import com.dev.LMS.exception.CourseNotFoundException;
 import com.dev.LMS.model.*;
 import com.dev.LMS.service.AssessmentService;
@@ -114,7 +111,7 @@ public class AssessmentController {
             return new ResponseEntity<>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    @GetMapping("/take-quiz/{quizName}")
+    @GetMapping("/{quizName}/take-quiz") //tested and fixed
     public ResponseEntity<?> takeQuiz(
             @PathVariable("course-name") String courseName,
             @PathVariable("quizName") String quizName) {
@@ -129,16 +126,16 @@ public class AssessmentController {
         }
 
         try {
-            QuizDto quiz = assessmentService.generateQuiz(courseName, quizName);
-            System.out.println(quiz);
-            return ResponseEntity.status(HttpStatus.CREATED).body(quiz);
+            QuizSubmissionDto quizSubmission = assessmentService.generateQuiz(courseName, quizName ,(Student)user);
+            System.out.println(quizSubmission);
+            return ResponseEntity.status(HttpStatus.CREATED).body(quizSubmission);
         } catch (CourseNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
-    @PostMapping("/submit-quiz/{quizName}")
+    @PostMapping("/{quizName}/submit-quiz")
     public ResponseEntity<?> submitQuiz(
             @PathVariable("course-name") String courseName,
             @PathVariable("quizName") String quizName,@RequestBody QuizSubmission quizSubmission) {
@@ -152,7 +149,7 @@ public class AssessmentController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only students can submit quizzes.");
         }
         try {
-            assessmentService.submitQuiz(courseName, quizName,quizSubmission,(Student) user);
+            assessmentService.submitQuiz(courseName, quizName,submittedQuestion,(Student) user);
             return ResponseEntity.status(HttpStatus.CREATED).body("submitted successfully");
         } catch (CourseNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
