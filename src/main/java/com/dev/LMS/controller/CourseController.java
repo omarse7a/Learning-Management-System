@@ -1,15 +1,14 @@
 package com.dev.LMS.controller;
 
 import java.net.URLConnection;
+import java.time.LocalDateTime;
 import java.util.*;
 import com.dev.LMS.dto.*;
 import com.dev.LMS.model.*;
 import com.dev.LMS.service.CourseService;
 import com.dev.LMS.service.UserService;
-import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.core.io.UrlResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -98,7 +97,7 @@ public class CourseController
 
           }
           if (user instanceof Student){
-              Student student = (Student) user;
+               Student student = (Student) user;
               Set<Course> enrolledCourses = courseService.getEnrolledCourses(student);
               if(enrolledCourses == null){
                   return ResponseEntity.ok().body("No courses found");
@@ -203,7 +202,7 @@ public class CourseController
 
     }
 
-    @PostMapping("/course/{courseName}/lessons/{lessonId}/addResource")
+    @PostMapping("/course/{courseName}/lessons/{lessonId}/add-resource")
     public ResponseEntity<?> addResource(@PathVariable("courseName") String courseName,@PathVariable("lessonId") int lessonId,@RequestParam MultipartFile file){
         try{
             Course course = courseService.getCourse(courseName);
@@ -282,7 +281,7 @@ public class CourseController
 
     }
 
-    @PostMapping("course/{courseName}/enroll")
+    @PostMapping("/course/{courseName}/enroll")
     public ResponseEntity<?> enrollCourse(@PathVariable("courseName") String courseName){
        try {
            String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -298,7 +297,7 @@ public class CourseController
 
     }
 
-    @GetMapping("course/{courseName}/enrolled")
+    @GetMapping("/course/{courseName}/enrolled")
     public ResponseEntity<?> getEnrolledStudents(@PathVariable("courseName") String courseName){
         try{
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -314,8 +313,8 @@ public class CourseController
         }
     }
 
-    @PutMapping("course/{courseName}/remove-student/{studentId}")
-    public ResponseEntity<?> removeEnrolledStd(@PathVariable("courseName") String courseName, @PathVariable("studentID") int studentId)
+    @DeleteMapping("/course/{courseName}/remove-student/{studentId}")
+    public ResponseEntity<?> removeEnrolledStd(@PathVariable("courseName") String courseName, @PathVariable("studentId") int studentId)
     {
         try{
 
@@ -339,9 +338,124 @@ public class CourseController
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("An error occurred" + e.getMessage());
         }
+    }
+
+    @PostMapping("/course/{courseName}/lessons/{lessonId}/generate-OTP")
+    public ResponseEntity<?> generateOTP(@PathVariable("courseName") String courseName,@PathVariable int lessonId,@RequestParam("duration") int duration){
+        try{
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userService.getUserByEmail(email);
+
+            if (user == null) {return ResponseEntity.badRequest().body("User not found, Please register or login first");}
+            if (!(user instanceof Instructor)) {return ResponseEntity.badRequest().body("You are not authorized");}
+
+            Instructor instructor = (Instructor) user;
+            Course course = courseService.getCourse(courseName);
+
+            if (course == null) return ResponseEntity.badRequest().body("Course not found");
+            Lesson lesson = courseService.getLessonbyId(course, lessonId);
+
+            if (lesson == null || lesson.getLessonOTP() != null && lesson.getLessonOTP().getExpireAt().isBefore(LocalDateTime.now())) return ResponseEntity.badRequest().body("Lesson id not found or OTP generated before and not expired.");
+
+            if (course.getInstructor().getId() != instructor.getId()) {return ResponseEntity.badRequest().body("You are not authorized to generate OTP for this course.");}
+
+            //get enrolled students
+            Set<Student> students = courseService.getEnrolledStd(course);
+            int otp = courseService.generateOTP(
+                    course, students, instructor, lesson, duration
+            );
+            return ResponseEntity.ok(otp);
+
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body("An error occurred" + e.getMessage());
+        }
+
+
+    }
+
+
+    @PostMapping("/course/{courseName}/lessons/{lessonId}/attendLesson")
+    public ResponseEntity<?> attendLesson(@PathVariable("courseName") String courseName,@PathVariable int lessonId,@RequestParam("otp") int otp)
+    {
+        try{
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userService.getUserByEmail(email);
+            if (user == null) {return ResponseEntity.badRequest().body("User not found, Please register or login first");}
+            if (! (user instanceof Student)) {return ResponseEntity.badRequest().body("You are not allowed to attend lessons");}
+
+            Student student = (Student) user;
+            Course course = courseService.getCourse(courseName);
+            if (course == null) return ResponseEntity.badRequest().body("Course not found");
+            if (!(student.getEnrolled_courses().contains(course))) {
+                return ResponseEntity.status(403).body("Student is not enrolled course");
+            }
+
+            Lesson lesson = courseService.getLessonbyId(course, lessonId);
+            if (lesson == null) return ResponseEntity.badRequest().body("Lesson id not found");
+            if (lesson.getAttendees().contains(student)) {
+                return ResponseEntity.status(403).body("Lesson already attended");
+            }
+
+            LessonDto lessonDto = courseService.attendLesson(course, student, lesson, otp);
+            return ResponseEntity.ok(lessonDto);
+        }
+        catch (Exception e){
+            return ResponseEntity.badRequest().body("An error occurred" + e.getMessage());
+        }
 
 
 
+    }
+
+    @GetMapping("/course/{courseName}/attended-lessons")
+    public ResponseEntity<?> getAttendedLessons(@PathVariable("courseName") String courseName ){
+        try{
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userService.getUserByEmail(email);
+
+            if (user == null) return ResponseEntity.badRequest().body("User not found, Please register or login first");
+            if (! (user instanceof Student)) return ResponseEntity.badRequest().build();
+
+            Student student = (Student) user;
+            Course course = courseService.getCourse(courseName);
+            if (course == null) return ResponseEntity.badRequest().body("Course not found");
+            Set <LessonDto>lessondto = courseService.getLessonAttended(course, student);
+            return ResponseEntity.ok(lessondto);
+        }
+        catch (Exception e){
+            return ResponseEntity.badRequest().body("An error occurred" + e.getMessage());
+        }
+    }
+
+
+    @GetMapping("/course/{courseName}/lessons/{lessonId}/attendanceList")
+    public ResponseEntity<?> getAttendance(@PathVariable("courseName") String courseName,@PathVariable int lessonId){
+        try {
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userService.getUserByEmail(email);
+
+            if (user == null) {
+                return ResponseEntity.badRequest().body("User not found, Please register or login first");
+            }
+            if (!(user instanceof Instructor)) {
+                return ResponseEntity.badRequest().body("You are not authorized");
+            }
+
+            Instructor instructor = (Instructor) user;
+            Course course = courseService.getCourse(courseName);
+
+            if (course == null) return ResponseEntity.badRequest().body("Course not found");
+            Lesson lesson = courseService.getLessonbyId(course, lessonId);
+
+            if (lesson == null) return ResponseEntity.badRequest().body("Lesson id not found");
+
+            List<StudentDto> attendanceList = courseService.getAttendance(lesson);
+            return ResponseEntity.ok(attendanceList);
+
+        }
+        catch (Exception e){
+            return ResponseEntity.badRequest().body("An error occurred" + e.getMessage());
+        }
     }
 
 

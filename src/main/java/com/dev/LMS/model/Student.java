@@ -1,7 +1,6 @@
 package com.dev.LMS.model;
 
 import jakarta.persistence.*;
-import jakarta.persistence.Table;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -15,15 +14,19 @@ public class Student extends User{
     @ManyToMany(mappedBy = "attendees")
     private Set<Lesson> lessonAttended = new HashSet<>();
 
-    //courses
+
     @ManyToMany(mappedBy = "enrolled_students",cascade = CascadeType.PERSIST)
+
     private Set<Course> enrolled_courses = new HashSet<>();
 
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
-    private List<AssignmentSubmisson> AssignmentSubmissions = new ArrayList<>();
+    private List<AssignmentSubmission> AssignmentSubmissions = new ArrayList<>();
 
     @OneToMany(mappedBy = "student", cascade = CascadeType.PERSIST)
     private List<QuizSubmission> quizSubmissions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
+    private List<Notification> notifications = new ArrayList<>();
 
     public Student() {}
 
@@ -49,7 +52,6 @@ public class Student extends User{
 
     public void attendLesson(Lesson lesson) {
         this.lessonAttended.add(lesson);
-        lesson.addAttendee(this);
     }
 
     public void enrollCourse(Course course) {
@@ -60,15 +62,16 @@ public class Student extends User{
         this.enrolled_courses.remove(course);
     }
 
-    public List<AssignmentSubmisson> getAssignmentSubmissions() {
+    public List<AssignmentSubmission> getAssignmentSubmissions() {
         return AssignmentSubmissions;
     }
 
-    public void setAssignmentSubmissions(List<AssignmentSubmisson> submissions) {
+    public void setAssignmentSubmissions(List<AssignmentSubmission> submissions) {
         this.AssignmentSubmissions = submissions;
     }
 
     public void addAssignmentSubmission(AssignmentSubmisson submission) {
+
         this.AssignmentSubmissions.add(submission);
         submission.setStudent(this);
     }
@@ -83,5 +86,18 @@ public class Student extends User{
 
     public void setQuizSubmissions(List<QuizSubmission> quizSubmissions) {
         this.quizSubmissions = quizSubmissions;
+    }
+
+    public List<Notification> getNotifications() {
+        return notifications;
+    }
+
+    public void setNotifications(List<Notification> notifications) {
+        this.notifications = notifications;
+    }
+
+    public void addNotification(Notification notification) {
+        this.notifications.add(notification);
+        notification.setStudent(this);
     }
 }

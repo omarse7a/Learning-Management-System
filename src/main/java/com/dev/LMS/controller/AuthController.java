@@ -48,7 +48,12 @@ public class AuthController {
     public ResponseEntity<Map<String, String>> login(@RequestBody UserLoginDto userdto) {
         Map<String, String> response = new HashMap<>();
         User user = userFactory.tempLoginUser(userdto.getRole(), userdto.getEmail());
-        user.setPassword(userdto.getPassword());
+        if (user != null) {
+            user.setPassword(userdto.getPassword());
+        } else {
+            response.put("message", "Invalid login credentials.");
+            return ResponseEntity.badRequest().body(response);
+        }
         try {
             if (user.getEmail() == null || user.getPassword() == null) {
                 response.put("message", "Email and password are required.");
