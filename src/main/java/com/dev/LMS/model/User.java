@@ -32,6 +32,7 @@ public abstract class User {
     private Role role;
 
 
+
     public User() {
     }
 

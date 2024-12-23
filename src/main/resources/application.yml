@@ -10,6 +10,17 @@ spring:
       file-size-threshold: 2KB
       max-file-size: 100MB
       max-request-size: 110MB
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: lms2empemail@gmail.com
+    password: jkelfhyzowtfqdys
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls: #encrypted
+            enable: true
   datasource:
     url: jdbc:postgresql://localhost:5432/LMS
     username: postgres
@@ -30,3 +41,4 @@ file:
     base-path:
       lesson-resources: "${user.dir}/src/main/resources/upload/lesson_resources"
       assignment-submissions: "${user.dir}/src/main/resources/upload/assignment-submissions"
+

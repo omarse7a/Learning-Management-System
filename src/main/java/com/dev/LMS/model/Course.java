@@ -34,8 +34,8 @@ public class Course {
 
     private List<Lesson> lessons = new ArrayList<>();
 
-    //Attendance List
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+
+    @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(
             name = "enrolled_students",
             joinColumns = @JoinColumn(name = "course_id"),
@@ -175,6 +175,7 @@ public class Course {
             this.lessons = new ArrayList<>();
         }
         this.lessons.add(lesson);
+
         lesson.setCourse(this);
     }
 
@@ -195,6 +196,7 @@ public class Course {
         if (user.getRole() == Role.STUDENT) {
             this.enrolled_students.add(user);
             user.enrollCourse(this);
+
         }
         else {
             throw new IllegalArgumentException("Only students can enroll in courses");

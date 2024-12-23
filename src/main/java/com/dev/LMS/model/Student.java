@@ -1,5 +1,6 @@
 package com.dev.LMS.model;
 
+
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
 
@@ -16,7 +17,7 @@ public class Student extends User{
     private Set<Lesson> lessonAttended = new HashSet<>();
 
     //courses
-    @ManyToMany(mappedBy = "enrolled_students")
+    @ManyToMany(mappedBy = "enrolled_students" )
     private Set<Course> enrolled_courses = new HashSet<>();
 
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
@@ -49,7 +50,6 @@ public class Student extends User{
 
     public void attendLesson(Lesson lesson) {
         this.lessonAttended.add(lesson);
-        lesson.addAttendee(this);
     }
 
     public void enrollCourse(Course course) {

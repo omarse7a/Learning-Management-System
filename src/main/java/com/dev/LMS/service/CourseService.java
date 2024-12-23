@@ -3,9 +3,12 @@ package com.dev.LMS.service;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import com.dev.LMS.dto.CourseDto;
+import com.dev.LMS.dto.LessonDto;
 import com.dev.LMS.dto.LessonResourceDto;
 import com.dev.LMS.dto.StudentDto;
 import com.dev.LMS.model.*;
@@ -13,20 +16,22 @@ import com.dev.LMS.repository.CourseRepository;
 import com.dev.LMS.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class CourseService {
     private final CourseRepository courseRepository;
     private final UserService userService;
-    private final UserRepository userRepository;
+    private final EmailService emailService;
     @Value("${file.upload.base-path.lesson-resources}") //check application.yml
     private Path resourcesPath ;
 
-    public CourseService(CourseRepository courseRepository, UserService userService, UserRepository userRepository)  {
+    public CourseService(CourseRepository courseRepository, UserService userService, EmailService emailService)  {
         this.courseRepository = courseRepository;
         this.userService = userService;
-        this.userRepository = userRepository;
+        this.emailService = emailService;
+
     }
 
     public Course createCourse(Course course, Instructor instructor){
@@ -181,9 +186,14 @@ public class CourseService {
         Set<Student> students = course.getEnrolled_students();
         Set<StudentDto> studentDtos = new HashSet<>();
         for (Student s : students) {
-            studentDtos.add(new StudentDto(s));
+            StudentDto studentDto = new StudentDto(s);
+            studentDtos.add(studentDto);
         }
         return studentDtos;
+    }
+
+    public Set<Student> getEnrolledStd(Course course){
+        return course.getEnrolled_students();
     }
 
     public void removeEnrolledstd(Course course, Instructor instructor, int studentId) {
@@ -193,4 +203,65 @@ public class CourseService {
         course.removeStudent(student);
         courseRepository.save(course);
      }
+
+    public int generateOTP(Course course, Set<Student> students, Instructor instructor,  Lesson lesson, int duration) {
+        Random random = new Random();
+        int otp = random.nextInt(900000) + 100000;
+        LessonOTP lessonOTP = new LessonOTP();
+        lessonOTP.setOtpValue(otp);
+        lessonOTP.setExpireAt(LocalDateTime.now().plusDays(duration));
+        lesson.addLessonOTP(lessonOTP);
+        for (Student student : students) {
+            emailService.sendOTP(
+                    student.getEmail(),
+                    student.getName(),
+                    lesson.getTitle(),
+                    lesson.getDescription(),
+                    duration,
+                    instructor.getName(),
+                    otp,
+                    course.getName()
+            );
+        }
+        courseRepository.save(course);
+
+        return otp;
+    }
+
+    public LessonDto attendLesson(Course course, Student student, Lesson lesson, int givenOtp) {
+        LessonOTP lessonOTP = lesson.getLessonOTP();
+        if (lessonOTP.getOtpValue() == givenOtp) {
+            if (lessonOTP.getExpireAt().isAfter(LocalDateTime.now())) {
+                lesson.addAttendee(student);
+                courseRepository.save(course);
+                return new LessonDto(lesson);
+            }
+            else{
+                throw new IllegalStateException("OTP expired");
+            }
+        }
+        else {
+            throw new IllegalStateException("Incorrect OTP");
+        }
+    }
+
+    public Set<LessonDto> getLessonAttended(Course course, int lessonId, Student student) {
+        Set<Lesson> lessons =  student.getLessonAttended();
+        Set<LessonDto> lessonDtos = new HashSet<>();
+        for (Lesson lesson : lessons) {
+            if (lesson.getCourse().getCourseId() == course.getCourseId()) {
+                lessonDtos.add(new LessonDto(lesson));
+            }
+        }
+        return lessonDtos;
+    }
+
+    public List<StudentDto> getAttendance(Lesson lesson) {
+        Set<Student> students = lesson.getAttendees();
+        List<StudentDto> studentDtos = new ArrayList<>();
+        for (Student student : students) {
+            studentDtos.add(new StudentDto(student));
+        }
+        return studentDtos;
+    }
 }
