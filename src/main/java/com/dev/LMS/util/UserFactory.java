@@ -10,6 +10,9 @@ import com.dev.LMS.model.Student;
 @Component
 public class UserFactory {
     public User createUser(String role, String name, String email) {
+        if (email == null || email.isEmpty()) {
+            throw new IllegalArgumentException("Email is required");
+        }
         Role userRole;
         try{
             userRole = Role.valueOf(role.toUpperCase());
@@ -25,6 +28,9 @@ public class UserFactory {
     }
 
     public User tempLoginUser(String role, String email) {
+        if (email == null || email.isEmpty()) {
+            throw new IllegalArgumentException("Email is required");
+        }
         Role userRole;
         try{
             userRole = Role.valueOf(role.toUpperCase());
