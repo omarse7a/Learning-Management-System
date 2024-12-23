@@ -49,7 +49,7 @@ public class Course {
     private List<Assignment> assignments = new ArrayList<>();
 
     // Quiz List
-    @OneToMany(mappedBy = "course",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "course",cascade = CascadeType.MERGE)
     private List<Quiz> quizzes = new ArrayList<>();
 
     // Question Bank
@@ -84,6 +84,14 @@ public class Course {
     } public void addQuiz(Quiz quiz){
         this.quizzes.add(quiz);
         quiz.setCourse(this);
+    }public void setQuiz(Quiz quiz){
+        for (int i = 0; i < this.quizzes.size(); i++) {
+            if(quizzes.get(i).getQuizTitle().equals(quiz.getQuizTitle())){
+                quizzes.set(i,quiz);
+                break;
+            }
+
+        }
     }
 
     public Course() {}

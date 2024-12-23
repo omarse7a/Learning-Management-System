@@ -1,6 +1,5 @@
 package com.dev.LMS.model;
 
-
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -15,14 +14,15 @@ public class Student extends User{
     @ManyToMany(mappedBy = "attendees")
     private Set<Lesson> lessonAttended = new HashSet<>();
 
-    //courses
-    @ManyToMany(mappedBy = "enrolled_students" )
+
+    @ManyToMany(mappedBy = "enrolled_students",cascade = CascadeType.PERSIST)
+
     private Set<Course> enrolled_courses = new HashSet<>();
 
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
     private List<AssignmentSubmission> AssignmentSubmissions = new ArrayList<>();
 
-    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "student", cascade = CascadeType.PERSIST)
     private List<QuizSubmission> quizSubmissions = new ArrayList<>();
 
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
@@ -70,10 +70,15 @@ public class Student extends User{
         this.AssignmentSubmissions = submissions;
     }
 
-    public void addSubmission(AssignmentSubmission submission) {
+    public void addAssignmentSubmission(AssignmentSubmisson submission) {
+
         this.AssignmentSubmissions.add(submission);
         submission.setStudent(this);
     }
+    public void addQuizSubmission(QuizSubmission submission) {
+        this.quizSubmissions.add(submission);
+    }
+
 
     public List<QuizSubmission> getQuizSubmissions() {
         return quizSubmissions;
