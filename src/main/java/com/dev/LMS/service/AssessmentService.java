@@ -257,7 +257,7 @@ public class AssessmentService {
     }
 
     public String uploadSubmissionFile(MultipartFile file, Assignment assignment, Student student){
-        String filePath = UPLOAD_DIR + file.getOriginalFilename();
+        String filePath = UPLOAD_DIR + "/" + file.getOriginalFilename();
 
         // database part
         AssignmentSubmission a = new AssignmentSubmission();
@@ -267,7 +267,7 @@ public class AssessmentService {
         a.setAssignment(assignment);
         // sets the submission's student and adds the submission to the student's submissions list
         student.addSubmission(a);
-        // saving using user repo!!!
+        // saving through user repo
         userRepository.save(student);
 
         // storing in the actual file system

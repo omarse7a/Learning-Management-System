@@ -26,14 +26,14 @@ import java.util.Map;
 @AllArgsConstructor
 @RestController
 @Controller
-@RequestMapping("/course/{courseName}")
+@RequestMapping("/course/{course-name}")
 public class AssessmentController {
 
-    AssessmentService assessmentService ;
+    AssessmentService assessmentService;
     UserService userService;
     CourseService courseService;
     @PostMapping("/create-question") //tested
-    public ResponseEntity<?> addQuestion(@PathVariable("courseName") String courseName,
+    public ResponseEntity<?> addQuestion(@PathVariable("course-name") String courseName,
                                          @RequestBody Question question)
     {
 
@@ -56,7 +56,7 @@ public class AssessmentController {
         }
     }
     @PostMapping("/create-quiz") //tested
-    public ResponseEntity<?> createQuiz(@PathVariable("courseName") String courseName,
+    public ResponseEntity<?> createQuiz(@PathVariable("course-name") String courseName,
                                         @RequestBody Quiz quiz)
     {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -78,7 +78,7 @@ public class AssessmentController {
         }
     }
     @GetMapping("/get-questions") //tested
-    public ResponseEntity<?> getQuestions(@PathVariable("courseName") String courseName){
+    public ResponseEntity<?> getQuestions(@PathVariable("course-name") String courseName){
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
         User user = userService.getUserByEmail(email);
@@ -96,7 +96,7 @@ public class AssessmentController {
             return new ResponseEntity<>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
         }
     } @GetMapping("/get-question-by-id") //tested
-    public ResponseEntity<?> getQuestions(@PathVariable("courseName") String courseName, @RequestBody int questionId){
+    public ResponseEntity<?> getQuestions(@PathVariable("course-name") String courseName, @RequestBody int questionId){
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
         User user = userService.getUserByEmail(email);
@@ -116,7 +116,7 @@ public class AssessmentController {
     }
     @GetMapping("/take-quiz/{quizName}")
     public ResponseEntity<?> takeQuiz(
-            @PathVariable("courseName") String courseName,
+            @PathVariable("course-name") String courseName,
             @PathVariable("quizName") String quizName) {
 
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -140,7 +140,7 @@ public class AssessmentController {
     }
     @PostMapping("/submit-quiz/{quizName}")
     public ResponseEntity<?> submitQuiz(
-            @PathVariable("courseName") String courseName,
+            @PathVariable("course-name") String courseName,
             @PathVariable("quizName") String quizName,@RequestBody QuizSubmission quizSubmission) {
 
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -162,7 +162,7 @@ public class AssessmentController {
     }
     @GetMapping("/{quizName}/grade")
    // getQuizGrade(String quizTitle,String courseName , Student user)
-    public ResponseEntity<?> getGrade(@PathVariable("courseName") String courseName , @PathVariable("quizName") String quizTitle){
+    public ResponseEntity<?> getGrade(@PathVariable("course-name") String courseName , @PathVariable("quizName") String quizTitle){
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
         User user = userService.getUserByEmail(email);
@@ -181,7 +181,7 @@ public class AssessmentController {
         }
     }
     @PostMapping("/create-assignment")
-    public ResponseEntity<?> createAssignment(@PathVariable("courseName") String courseName,
+    public ResponseEntity<?> createAssignment(@PathVariable("course-name") String courseName,
                                               @RequestBody Assignment assignment)
     {
         try {
@@ -207,7 +207,7 @@ public class AssessmentController {
     }
 
     @GetMapping("/assignments") // "/view-assignments"
-    public ResponseEntity<?> viewAssignments(@PathVariable("courseName") String courseName)
+    public ResponseEntity<?> viewAssignments(@PathVariable("course-name") String courseName)
     {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userService.getUserByEmail(email);
@@ -232,7 +232,7 @@ public class AssessmentController {
     }
 
     @GetMapping("/assignment/{assignment_id}/view")     // "/view-assignment/{id}"
-    public ResponseEntity<?> viewAssignment(@PathVariable("courseName") String courseName,
+    public ResponseEntity<?> viewAssignment(@PathVariable("course-name") String courseName,
                                             @PathVariable("assignment_id") int assignment_id)
     {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -263,8 +263,8 @@ public class AssessmentController {
         return ResponseEntity.status(403).body("You are not authorized to view assignments.");
     }
 
-    @PostMapping("assignment/{assignment_id}/submit")   // "submit-assignment/{assignment_id}"
-    public ResponseEntity<?> submitAssignment(@PathVariable("courseName") String courseName,
+    @PostMapping("/assignment/{assignment_id}/submit")   // "submit-assignment/{assignment_id}"
+    public ResponseEntity<?> submitAssignment(@PathVariable("course-name") String courseName,
                                               @PathVariable("assignment_id") int assignmentId,
                                               @RequestParam("file") MultipartFile file)
     {
@@ -297,8 +297,8 @@ public class AssessmentController {
         }
     }
 
- 
-    public ResponseEntity<?> getSubmissionsList(@PathVariable("courseName") String courseName,
+    @GetMapping("/assignment/{assignment_id}/submissions")
+    public ResponseEntity<?> getSubmissionsList(@PathVariable("course-name") String courseName,
                                                 @PathVariable("assignment_id") int assignmentId)
     {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -326,8 +326,8 @@ public class AssessmentController {
         }
     }
 
-
-    public ResponseEntity<?> getAssignmentSubmission(@PathVariable("courseName") String courseName,
+    @GetMapping("/assignment/{assignment_id}/submission/{submission_id}")
+    public ResponseEntity<?> getAssignmentSubmission(@PathVariable("course-name") String courseName,
                                                      @PathVariable("assignment_id") int assignmentId,
                                                      @PathVariable("submission_id") int submissionId)
     {
