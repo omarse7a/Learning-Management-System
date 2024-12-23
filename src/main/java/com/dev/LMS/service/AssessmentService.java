@@ -89,15 +89,18 @@ public class AssessmentService {
         List<Question> selectedQuestions = allQuestions.subList(0, Math.min(2, allQuestions.size()));
         QuizSubmission quizSubmission = new QuizSubmission();
         quizSubmission.setQuestions(selectedQuestions);
+        for(Question q:selectedQuestions){
+            q.addSubmission(quizSubmission);
+        }
         quizSubmission.setSubmittedQuestions(new ArrayList<>());
         quizSubmission.setGrade(0);
         quizSubmission.setStudent(student);
+        student.addQuizSubmission(quizSubmission);
         quizSubmission.setQuiz(currentQuiz);
         currentQuiz.addQuizSubmission(quizSubmission);
         course.setQuiz(currentQuiz);
-        student.addQuizSubmission(quizSubmission);
+
         courseRepository.save(course);
-        userRepository.save(student);
         System.out.println(QuestionDto.listToDto(student.getQuizSubmissions().get(0).getQuestions())+"\n\n\n\n\n\n\n\n\n");
         return QuizSubmissionDto.toDto(quizSubmission);
     }
@@ -122,7 +125,12 @@ public class AssessmentService {
         if(!isFound) {
             throw new IllegalStateException("This quiz dose not exit.");
         }
-        QuizSubmission quizSubmission = currentQuiz.findbyStudent(student);
+        List<QuizSubmission> quizSubmissions = course.getQuizzes().get(index).getSubmissions();
+        QuizSubmission quizSubmission = null;
+        for (QuizSubmission q : quizSubmissions){
+            if(q.getStudent().getId() == student.getId())
+                quizSubmission = q;
+        }
         if(quizSubmission == null)
             throw new IllegalStateException("there is no submission.");
         if(studentSubmittedQuestions == null || studentSubmittedQuestions.isEmpty())
@@ -278,7 +286,7 @@ public class AssessmentService {
     }
 
     public String uploadSubmissionFile(MultipartFile file, Assignment assignment, Student student){
-        String filePath = UPLOAD_DIR + file.getOriginalFilename();
+        String filePath = UPLOAD_DIR + "/" + file.getOriginalFilename();
 
         // database part
         AssignmentSubmission a = new AssignmentSubmission();
@@ -286,9 +294,10 @@ public class AssessmentService {
         a.setFileType(file.getContentType());
         a.setFilePath(filePath);
         a.setAssignment(assignment);
+      
         // sets the submission's student and adds the submission to the student's submissions list
         student.addAssignmentSubmission(a);
-        // saving using user repo!!!
+        // saving through user repo
         userRepository.save(student);
 
         // storing in the actual file system
