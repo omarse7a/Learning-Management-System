@@ -26,6 +26,10 @@ public class Student extends User{
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
     private List<QuizSubmission> quizSubmissions = new ArrayList<>();
 
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "student_id")
+    private List<Notification> notifications = new ArrayList<>();
+
     public Student() {}
 
     public Student(String name, String email) {
@@ -79,5 +83,13 @@ public class Student extends User{
 
     public void setQuizSubmissions(List<QuizSubmission> quizSubmissions) {
         this.quizSubmissions = quizSubmissions;
+    }
+
+    public List<Notification> getNotifications() {
+        return notifications;
+    }
+
+    public void setNotifications(List<Notification> notifications) {
+        this.notifications = notifications;
     }
 }
