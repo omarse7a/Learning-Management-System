@@ -23,6 +23,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -156,6 +158,88 @@ public class CourseControllerTest {
         assertEquals("Course not found", response.getBody());
         verify(courseService).getCourse("NonExistentCourse");
     }
+
+    @Test
+    void getCourseById_courseExist_returnCourse(){
+        // Arrange
+        Course course = new Course();
+        course.setName("Test Course");
+        course.setDescription("Test Description");
+        course.setDuration((float) 40);
+
+        Instructor instructor = new Instructor();
+        instructor.setName("Test Instructor");
+        course.setInstructor(instructor);
+
+        when(courseService.getCourseById(1)).thenReturn(course);
+
+        // Act
+        ResponseEntity<?> response = courseController.getCourse(1);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.getBody() instanceof CourseDto);
+
+        CourseDto returnedCourseDto = (CourseDto) response.getBody();
+        assertEquals(course.getName(), returnedCourseDto.getCourseName());
+        assertEquals(course.getDescription(), returnedCourseDto.getCourseDescription());
+        assertEquals(course.getInstructor().getName(), returnedCourseDto.getInstructorName());
+        verify(courseService).getCourseById(1);
+
+    }
+
+    @Test
+    void getCourseById_courseNotFound_returnBadRequest() {
+        // Arrange
+        when(courseService.getCourse("NonExistentCourse")).thenReturn(null);
+
+        // Act
+        ResponseEntity<?> response = courseController.getCourse("NonExistentCourse");
+
+        // Assert
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Course not found", response.getBody());
+        verify(courseService).getCourse("NonExistentCourse");
+    }
+
+
+    @Test
+    void getAllCourses(){
+        // Arrange
+        Instructor instructor = new Instructor();
+        instructor.setName("Test Instructor");
+
+        Course course1 = new Course();
+        course1.setName("Test Course");
+        course1.setDescription("This is Test Course");
+        course1.setDuration((float) 40);
+        course1.setInstructor(instructor);
+
+        Course course2 = new Course();
+        course2.setName("Test Course Two");
+        course2.setDescription("This is Test Course Two");
+        course2.setDuration((float) 30);
+        course2.setInstructor(instructor);
+
+        List<Course> courseList = new ArrayList<>();
+        courseList.add(course1);
+        courseList.add(course2);
+        when(courseService.getAllCourses()).thenReturn(courseList);
+
+        // Act
+        ResponseEntity<?> response = courseController.getAllCourses();
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.getBody() instanceof List);
+
+        List<CourseDto> returnedCourses = (List<CourseDto>) response.getBody();
+        assertEquals(2, returnedCourses.size());
+        assertEquals("Test Course", returnedCourses.get(0).getCourseName());
+        assertEquals("Test Course Two", returnedCourses.get(1).getCourseName());
+        verify(courseService).getAllCourses();
+    }
+
 
 
 
