@@ -137,4 +137,8 @@ public class Question {
                 ", course=" + course +
                 '}';
     }
+
+    public void addSubmission(QuizSubmission quizSubmission) {
+        this.submissions.add(quizSubmission);
+    }
 }
