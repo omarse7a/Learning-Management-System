@@ -3,30 +3,32 @@ package com.dev.LMS.service;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import com.dev.LMS.dto.CourseDto;
 import com.dev.LMS.dto.LessonResourceDto;
 import com.dev.LMS.dto.StudentDto;
 import com.dev.LMS.model.*;
 import com.dev.LMS.repository.CourseRepository;
-import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class CourseService {
     private final CourseRepository courseRepository;
     private final UserService userService;
-
+    private final EmailService emailService;
     @Value("${file.upload.base-path.lesson-resources}") //check application.yml
     private Path resourcesPath ;
 
-    public CourseService(CourseRepository courseRepository, UserService userService)  {
+    public CourseService(CourseRepository courseRepository, UserService userService, EmailService emailService)  {
         this.courseRepository = courseRepository;
         this.userService = userService;
-
+        this.emailService = emailService;
 
     }
 
@@ -187,6 +189,10 @@ public class CourseService {
         return studentDtos;
     }
 
+    public Set<Student> getEnrolledStd(Course course){
+        return course.getEnrolled_students();
+    }
+
     public void removeEnrolledstd(Course course, Instructor instructor, int studentId) {
         User user = userService.getUserById(studentId);
         if (user == null || !(user instanceof  Student))  throw new IllegalStateException("Student not found");
@@ -194,4 +200,28 @@ public class CourseService {
         course.removeStudent(student);
         courseRepository.save(course);
      }
+
+    public int generateOTP(Course course, Set<Student> students, Instructor instructor,  Lesson lesson, int duration) {
+        Random random = new Random();
+        int otp = random.nextInt(900000) + 100000;
+        LessonOTP lessonOTP = new LessonOTP();
+        lessonOTP.setOtpValue(otp);
+        lessonOTP.setExpireAt(LocalDateTime.now().plusDays(duration));
+        lesson.addLessonOTP(lessonOTP);
+        for (Student student : students) {
+            emailService.sendOTP(
+                    student.getEmail(),
+                    student.getName(),
+                    lesson.getTitle(),
+                    lesson.getDescription(),
+                    duration,
+                    instructor.getName(),
+                    otp,
+                    course.getName()
+            );
+        }
+        courseRepository.save(course);
+
+        return otp;
+    }
 }

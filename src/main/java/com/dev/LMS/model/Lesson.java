@@ -2,6 +2,7 @@ package com.dev.LMS.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -28,7 +29,9 @@ public class Lesson {
     @NotEmpty
     private String title;
     private String description;
-    private int OTP;
+
+    @OneToOne(mappedBy = "lesson", cascade = CascadeType.ALL)
+    private LessonOTP lessonOTP ;
 
     //extra lesson resource
     @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL)
@@ -68,6 +71,11 @@ public class Lesson {
     public void removeLessonResource(LessonResource lessonResource) {
         this.lessonResources.remove(lessonResource);
         lessonResource.setLesson(null);
+    }
+
+    public void addLessonOTP(LessonOTP lessonOTP) {
+        this.lessonOTP = lessonOTP;
+        lessonOTP.setLesson(this);
     }
 
 }

@@ -6,10 +6,8 @@ import com.dev.LMS.dto.*;
 import com.dev.LMS.model.*;
 import com.dev.LMS.service.CourseService;
 import com.dev.LMS.service.UserService;
-import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.core.io.UrlResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -314,8 +312,8 @@ public class CourseController
         }
     }
 
-    @PutMapping("course/{courseName}/remove-student/{studentId}")
-    public ResponseEntity<?> removeEnrolledStd(@PathVariable("courseName") String courseName, @PathVariable("studentID") int studentId)
+    @DeleteMapping("course/{courseName}/remove-student/{studentId}")
+    public ResponseEntity<?> removeEnrolledStd(@PathVariable("courseName") String courseName, @PathVariable("studentId") int studentId)
     {
         try{
 
@@ -339,10 +337,37 @@ public class CourseController
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("An error occurred" + e.getMessage());
         }
+    }
 
+    @PostMapping("course/{courseName}/lessons/{lessonId}/generate-OTP")
+    public ResponseEntity<?> generateOTP(@PathVariable("courseName") String courseName,@PathVariable int lessonId,@RequestParam("duration") int duration){
+        try{
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userService.getUserByEmail(email);
+            if (user == null) {return ResponseEntity.badRequest().body("User not found, Please register or login first");}
+            if (!(user instanceof Instructor)) {return ResponseEntity.badRequest().body("You are not authorized");}
+            Instructor instructor = (Instructor) user;
+            Course course = courseService.getCourse(courseName);
+            if (course == null) return ResponseEntity.badRequest().body("Course not found");
+            Lesson lesson = courseService.getLessonbyId(course, lessonId);
+            if (lesson == null || lesson.getLessonOTP() != null) return ResponseEntity.badRequest().body("Lesson id not found or OTP generated before");
+            if (course.getInstructor().getId() != instructor.getId()) {return ResponseEntity.badRequest().body("You are not authorized to generate OTP for this course.");}
+
+            //get enrolled students
+            Set<Student> students = courseService.getEnrolledStd(course);
+            int otp = courseService.generateOTP(
+                    course, students, instructor, lesson, duration
+            );
+            return ResponseEntity.ok(otp);
+
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body("An error occurred" + e.getMessage());
+        }
 
 
     }
+
+
 
 
 
