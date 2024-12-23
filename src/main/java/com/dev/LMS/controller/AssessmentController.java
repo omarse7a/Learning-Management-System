@@ -1,9 +1,6 @@
 package com.dev.LMS.controller;
 
-import com.dev.LMS.dto.AssignmentDto;
-import com.dev.LMS.dto.AssignmentSubmissionDto;
-import com.dev.LMS.dto.QuestionDto;
-import com.dev.LMS.dto.QuizDto;
+import com.dev.LMS.dto.*;
 import com.dev.LMS.exception.CourseNotFoundException;
 import com.dev.LMS.model.*;
 import com.dev.LMS.service.AssessmentService;
@@ -129,9 +126,9 @@ public class AssessmentController {
         }
 
         try {
-            QuizDto quiz = assessmentService.generateQuiz(courseName, quizName);
-            System.out.println(quiz);
-            return ResponseEntity.status(HttpStatus.CREATED).body(quiz);
+            QuizSubmissionDto quizSubmission = assessmentService.generateQuiz(courseName, quizName ,(Student)user);
+            System.out.println(quizSubmission);
+            return ResponseEntity.status(HttpStatus.CREATED).body(quizSubmission);
         } catch (CourseNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
@@ -141,8 +138,7 @@ public class AssessmentController {
     @PostMapping("/{quizName}/submit-quiz")
     public ResponseEntity<?> submitQuiz(
             @PathVariable("courseName") String courseName,
-            @PathVariable("quizName") String quizName,@RequestBody QuizSubmission quizSubmission) {
-
+            @PathVariable("quizName") String quizName,@RequestBody List<SubmittedQuestion> submittedQuestion) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userService.getUserByEmail(email);
         if (user == null) {
@@ -152,7 +148,7 @@ public class AssessmentController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only students can submit quizzes.");
         }
         try {
-            assessmentService.submitQuiz(courseName, quizName,quizSubmission,(Student) user);
+            assessmentService.submitQuiz(courseName, quizName,submittedQuestion,(Student) user);
             return ResponseEntity.status(HttpStatus.CREATED).body("submitted successfully");
         } catch (CourseNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());

@@ -30,12 +30,6 @@ public abstract class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
-
-
-    @ManyToMany(mappedBy = "enrolled_students")
-    private Set<Course> enrolled_courses = new HashSet<>();
-
-
     public User() {
     }
 

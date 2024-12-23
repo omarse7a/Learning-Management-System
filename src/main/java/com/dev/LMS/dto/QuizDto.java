@@ -23,13 +23,11 @@ public class QuizDto {
     private Long quizID;
     private String quizTitle;
     private Time quizDuration;
-    private List<QuestionDto> questions;
 public static QuizDto toDto(Quiz quiz){
     return QuizDto.builder().
             quizID(quiz.getQuizID()).
             quizDuration(quiz.getQuizDuration()).
             quizTitle(quiz.getQuizTitle()).
-            questions(QuestionDto.listToDto(quiz.getQuestions())).
             build();
 }
 

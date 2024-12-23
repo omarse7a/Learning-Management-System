@@ -1,7 +1,5 @@
 package com.dev.LMS.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
 
@@ -18,13 +16,13 @@ public class Student extends User{
     private Set<Lesson> lessonAttended = new HashSet<>();
 
     //courses
-    @ManyToMany(mappedBy = "enrolled_students")
+    @ManyToMany(mappedBy = "enrolled_students",cascade = CascadeType.PERSIST)
     private Set<Course> enrolled_courses = new HashSet<>();
 
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
     private List<AssignmentSubmisson> AssignmentSubmissions = new ArrayList<>();
 
-    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "student", cascade = CascadeType.PERSIST)
     private List<QuizSubmission> quizSubmissions = new ArrayList<>();
 
     public Student() {}
@@ -70,10 +68,14 @@ public class Student extends User{
         this.AssignmentSubmissions = submissions;
     }
 
-    public void addSubmission(AssignmentSubmisson submission) {
+    public void addAssignmentSubmission(AssignmentSubmisson submission) {
         this.AssignmentSubmissions.add(submission);
         submission.setStudent(this);
     }
+    public void addQuizSubmission(QuizSubmission submission) {
+        this.quizSubmissions.add(submission);
+    }
+
 
     public List<QuizSubmission> getQuizSubmissions() {
         return quizSubmissions;
