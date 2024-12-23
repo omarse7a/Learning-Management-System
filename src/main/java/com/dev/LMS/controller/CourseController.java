@@ -408,7 +408,7 @@ public class CourseController
     }
 
     @GetMapping("/course/{courseName}/attended-lessons")
-    public ResponseEntity<?> getAttendedLessons(@PathVariable("courseName") String courseName, @PathVariable("lessonId") int lessonId){
+    public ResponseEntity<?> getAttendedLessons(@PathVariable("courseName") String courseName ){
         try{
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
             User user = userService.getUserByEmail(email);
@@ -419,7 +419,7 @@ public class CourseController
             Student student = (Student) user;
             Course course = courseService.getCourse(courseName);
             if (course == null) return ResponseEntity.badRequest().body("Course not found");
-            Set <LessonDto>lessondto = courseService.getLessonAttended(course, lessonId, student);
+            Set <LessonDto>lessondto = courseService.getLessonAttended(course, student);
             return ResponseEntity.ok(lessondto);
         }
         catch (Exception e){
