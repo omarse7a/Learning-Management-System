@@ -1,6 +1,5 @@
 package com.dev.LMS.model;
 
-import jakarta.persistence.*;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
@@ -15,8 +14,7 @@ public class Instructor extends User {
     @OneToMany(mappedBy = "instructor")
     private Set<Course> createdCourses;
 
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "instructor_id")
+    @OneToMany(mappedBy = "instructor", cascade = CascadeType.ALL)
     private List<Notification> notifications = new ArrayList<>();
 
     public Instructor() {}
@@ -44,5 +42,10 @@ public class Instructor extends User {
 
     public void setNotifications(List<Notification> notifications) {
         this.notifications = notifications;
+    }
+
+    public void addNotification(Notification notification) {
+        this.notifications.add(notification);
+        notification.setInstructor(this);
     }
 }

@@ -2,7 +2,6 @@ package com.dev.LMS.model;
 
 
 import jakarta.persistence.*;
-import jakarta.persistence.Table;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -26,8 +25,7 @@ public class Student extends User{
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
     private List<QuizSubmission> quizSubmissions = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "student_id")
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
     private List<Notification> notifications = new ArrayList<>();
 
     public Student() {}
@@ -91,5 +89,10 @@ public class Student extends User{
 
     public void setNotifications(List<Notification> notifications) {
         this.notifications = notifications;
+    }
+
+    public void addNotification(Notification notification) {
+        this.notifications.add(notification);
+        notification.setStudent(this);
     }
 }
