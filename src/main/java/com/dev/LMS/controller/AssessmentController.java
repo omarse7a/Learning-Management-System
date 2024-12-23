@@ -138,7 +138,7 @@ public class AssessmentController {
     @PostMapping("/{quizName}/submit-quiz")
     public ResponseEntity<?> submitQuiz(
             @PathVariable("course-name") String courseName,
-            @PathVariable("quizName") String quizName,@RequestBody QuizSubmission quizSubmission) {
+            @PathVariable("quizName") String quizName,@RequestBody SubmittedQuestion submittedQuestion) {
 
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userService.getUserByEmail(email);
@@ -149,7 +149,7 @@ public class AssessmentController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only students can submit quizzes.");
         }
         try {
-            assessmentService.submitQuiz(courseName, quizName,submittedQuestion,(Student) user);
+            assessmentService.submitQuiz(courseName, quizName, (List<SubmittedQuestion>) submittedQuestion,(Student) user);
             return ResponseEntity.status(HttpStatus.CREATED).body("submitted successfully");
         } catch (CourseNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
