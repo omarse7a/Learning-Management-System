@@ -169,7 +169,6 @@ public class CourseService {
             throw new IllegalStateException("You are already enrolled in this course");
         course.addStudent(student);
         courseRepository.save(course);
-        userRepository.save(student);
         Set<Course> enrolledCourses = student.getEnrolled_courses();
         Set<CourseDto> enrolledCoursesDto = new HashSet<>();
         for (Course c : enrolledCourses) {
@@ -245,7 +244,7 @@ public class CourseService {
         }
     }
 
-    public Set<LessonDto> getLessonAttended(Course course, int lessonId, Student student) {
+    public Set<LessonDto> getLessonAttended(Course course,  Student student) {
         Set<Lesson> lessons =  student.getLessonAttended();
         Set<LessonDto> lessonDtos = new HashSet<>();
         for (Lesson lesson : lessons) {
