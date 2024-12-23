@@ -1,9 +1,13 @@
 package com.dev.LMS.controller;
 
+import com.dev.LMS.dto.NotificationDto;
 import com.dev.LMS.dto.RegisterDto;
 import com.dev.LMS.dto.UpdateProfileDto;
 import com.dev.LMS.dto.UserLoginDto;
+import com.dev.LMS.model.Instructor;
+import com.dev.LMS.model.Student;
 import com.dev.LMS.model.User;
+import com.dev.LMS.service.NotificationService;
 import com.dev.LMS.service.UserService;
 import com.dev.LMS.util.UserFactory;
 
@@ -31,6 +35,9 @@ public class UserController {
 
     @Autowired
     private UserFactory userFactory;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @GetMapping("/profile")
     public ResponseEntity<User> getUserProfile() {
@@ -79,5 +86,31 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(@PathVariable int id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/notifications")
+    public ResponseEntity<?> getAllNotifications() {
+        try{
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userService.getUserByEmail(email);
+            if (user == null) {
+                return ResponseEntity.badRequest().body("User not found");
+            }
+            if (user instanceof Instructor){
+                Instructor instructor = (Instructor) user;
+                List<NotificationDto> notifications = notificationService.getInstructorNotification(instructor);
+                return ResponseEntity.ok(notifications);
+            }
+            if (user instanceof Student){
+                Student student = (Student) user;
+                List<NotificationDto> notifications = notificationService.getStudentNotification(student);
+                return ResponseEntity.ok(notifications);
+            }
+            else
+                return ResponseEntity.badRequest().body("User not found");
+        }
+        catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }

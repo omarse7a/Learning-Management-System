@@ -1,6 +1,8 @@
 package com.dev.LMS.model;
 
 import java.sql.Time;
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -9,7 +11,7 @@ public class Notification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String message;
-    private Time time;
+    private LocalDateTime time;
     private boolean isRead;
 
     @ManyToOne
@@ -21,10 +23,14 @@ public class Notification {
     private Instructor instructor;
 
     // Constructor
-    public Notification(String message, Time time, boolean isRead) {
+    public Notification(String message, LocalDateTime time, boolean isRead) {
         this.message = message;
         this.time = time;
         this.isRead = isRead;
+    }
+
+    public Notification() {
+
     }
 
     // Getters and Setters
@@ -40,11 +46,11 @@ public class Notification {
         this.message = message;
     }
 
-    public Time getTime() {
+    public LocalDateTime getTime() {
         return time;
     }
 
-    public void setTime(Time time) {
+    public void setTime(LocalDateTime time) {
         this.time = time;
     }
 

@@ -48,4 +48,9 @@ public class Instructor extends User {
         this.notifications.add(notification);
         notification.setInstructor(this);
     }
+
+    public void removeNotification(Notification notification) {
+        this.notifications.remove(notification);
+        notification.setInstructor(null);
+    }
 }

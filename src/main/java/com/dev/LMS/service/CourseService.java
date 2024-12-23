@@ -14,6 +14,7 @@ import com.dev.LMS.dto.StudentDto;
 import com.dev.LMS.model.*;
 import com.dev.LMS.repository.CourseRepository;
 import com.dev.LMS.repository.UserRepository;
+import org.aspectj.weaver.ast.Not;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,13 +25,15 @@ public class CourseService {
     private final CourseRepository courseRepository;
     private final UserService userService;
     private final EmailService emailService;
+    private final NotificationService notificationService;
     @Value("${file.upload.base-path.lesson-resources}") //check application.yml
     private Path resourcesPath ;
 
-    public CourseService(CourseRepository courseRepository, UserService userService, EmailService emailService)  {
+    public CourseService(CourseRepository courseRepository, UserService userService, EmailService emailService,NotificationService notificationService)  {
         this.courseRepository = courseRepository;
         this.userService = userService;
         this.emailService = emailService;
+        this.notificationService = notificationService;
 
     }
 
@@ -66,6 +69,11 @@ public class CourseService {
 
     public Lesson addLesson(Course course, Lesson lesson) {
         course.addLesson(lesson);
+        Notification notificationMessage = notificationService.createNotification("New Lesson Added By Instructor: " + course.getInstructor().getName());
+        Set<Student> enrolledStudent = course.getEnrolled_students();
+        for (Student s : enrolledStudent) {
+            notificationService.addNotifcationStudent(notificationMessage, s);
+        }
         courseRepository.save(course);
         return course.getLessons().getLast();
     }
@@ -168,6 +176,11 @@ public class CourseService {
         if (course.getEnrolled_students().contains(student))
             throw new IllegalStateException("You are already enrolled in this course");
         course.addStudent(student);
+
+        Notification notificationMessage = notificationService.createNotification("Student:" +student.getName() + " Enrolled in Course: " + courseName);
+        Instructor instructor = course.getInstructor();
+        notificationService.addNotificationInstructor(notificationMessage, instructor);
+
         courseRepository.save(course);
         Set<Course> enrolledCourses = student.getEnrolled_courses();
         Set<CourseDto> enrolledCoursesDto = new HashSet<>();
@@ -232,6 +245,10 @@ public class CourseService {
         if (lessonOTP.getOtpValue() == givenOtp) {
             if (lessonOTP.getExpireAt().isAfter(LocalDateTime.now())) {
                 lesson.addAttendee(student);
+
+                Notification notificationMessage = notificationService.createNotification("Student:" +student.getName() + " Attends Lesson: " + lesson.getTitle());
+                notificationService.addNotificationInstructor(notificationMessage, course.getInstructor());
+
                 courseRepository.save(course);
                 return new LessonDto(lesson);
             }

@@ -100,4 +100,9 @@ public class Student extends User{
         this.notifications.add(notification);
         notification.setStudent(this);
     }
+
+    public void removeNotification(Notification notification) {
+        this.notifications.remove(notification);
+        notification.setStudent(null);
+    }
 }
