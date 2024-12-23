@@ -22,7 +22,7 @@ public class LessonResourceDto {
         this.file_type = lessonResource.getFile_type();
         this.lesson_title  = lessonResource.getLesson().getTitle();
         this.course_name = lessonResource.getLesson().getCourse().getName();
-        this.author_name = lessonResource.getLesson().getCourse().getInstructor().getName();
+       //this.author_name = lessonResource.getLesson().getCourse().getInstructor().getName();
     }
 }
 
