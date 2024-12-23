@@ -4,7 +4,7 @@ import com.dev.LMS.dto.*;
 import com.dev.LMS.model.*;
 import com.dev.LMS.repository.CourseRepository;
 import com.dev.LMS.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.AllArgsConstructor;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,22 +14,15 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
 
+@AllArgsConstructor
 @Service
 public class AssessmentService {
     private CourseRepository courseRepository;
     private UserRepository userRepository;
-    @Value( "${file.upload.base-path.assignment-submissions}")
-    private String UPLOAD_DIR;
-
-    // replaced the all args constructor, because UPLOAD_DIR shouldn't be initialized
-    public AssessmentService(CourseRepository courseRepository, UserRepository userRepository)  {
-        this.courseRepository = courseRepository;
-        this.userRepository = userRepository;
-    }
-
+    private final String UPLOAD_DIR = "../../../../../resources/uploads/assignment-submissions/";
     public void createQuestion(String courseName , Question question ){
         Course course = courseRepository.findByName(courseName)
-             .orElseThrow(() -> new IllegalArgumentException("Course not found: " + courseName));
+                .orElseThrow(() -> new IllegalArgumentException("Course not found: " + courseName));
         course.addQuestion(question);
         courseRepository.save(course);
     }
@@ -186,7 +179,7 @@ public class AssessmentService {
                 Question currentQuestion = CurrentSubmittedQuestion.getQuestion();
                 if(CurrentSubmittedQuestion.getStudentAnswer().
                         equals(currentQuestion.getCorrectAnswer()))
-                   grade++;
+                    grade++;
             }
             quizSubmissions.get(i).setGrade(grade);
         }
@@ -215,11 +208,16 @@ public class AssessmentService {
         List<QuizSubmission> quizSubmissions = currentQuiz.getSubmissions();
         for (int i = 0; i < quizSubmissions.size(); i++) {
             if(quizSubmissions.get(i).getStudent().equals(user)){
-                    return quizSubmissions.get(i).getGrade();
+                return quizSubmissions.get(i).getGrade();
             }
         }
         throw new IllegalStateException("There is no submission for this student: "+ user.getName());
     }
+    public  List<Assignment> getAssignmentSub(Assignment assignment){
+        List<Assignment> assignmentList = null;
+        return assignmentList;
+    }
+
 
     public AssignmentDto addAssignment(Course course, Assignment assignment, Instructor instructor){
         Set<Course> instructorCourses = instructor.getCreatedCourses();

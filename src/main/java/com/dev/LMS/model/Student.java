@@ -70,7 +70,7 @@ public class Student extends User{
         this.AssignmentSubmissions = submissions;
     }
 
-    public void addAssignmentSubmission(AssignmentSubmisson submission) {
+    public void addAssignmentSubmission(AssignmentSubmission submission) {
 
         this.AssignmentSubmissions.add(submission);
         submission.setStudent(this);
