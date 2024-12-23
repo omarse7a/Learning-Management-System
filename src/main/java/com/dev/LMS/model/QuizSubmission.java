@@ -12,6 +12,8 @@ public class QuizSubmission {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer submission_id;
 
+    private Boolean isGraded = false;
+    private int grade;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "quiz_id")
     private Quiz quiz;
@@ -19,6 +21,14 @@ public class QuizSubmission {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id")
     private Student student;
+
+    public Boolean getGraded() {
+        return isGraded;
+    }
+
+    public void setGraded(Boolean graded) {
+        isGraded = graded;
+    }
 
     @ManyToMany(mappedBy = "submissions", cascade = CascadeType.PERSIST)
     private List<Question> questions = new ArrayList<>();
@@ -56,6 +66,14 @@ public class QuizSubmission {
 
     public List<Question> getQuestions() {
         return questions;
+    }
+
+    public int getGrade() {
+        return grade;
+    }
+
+    public void setGrade(int grade) {
+        this.grade = grade;
     }
 
     public void setQuestions(List<Question> questions) {

@@ -21,7 +21,7 @@ public class Student extends User{
     private Set<Course> enrolled_courses = new HashSet<>();
 
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
-    private List<AssignmentSubmisson> AssignmentSubmissions = new ArrayList<>();
+    private List<AssignmentSubmission> AssignmentSubmissions = new ArrayList<>();
 
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
     private List<QuizSubmission> quizSubmissions = new ArrayList<>();
@@ -60,15 +60,15 @@ public class Student extends User{
         this.enrolled_courses.remove(course);
     }
 
-    public List<AssignmentSubmisson> getAssignmentSubmissions() {
+    public List<AssignmentSubmission> getAssignmentSubmissions() {
         return AssignmentSubmissions;
     }
 
-    public void setAssignmentSubmissions(List<AssignmentSubmisson> submissions) {
+    public void setAssignmentSubmissions(List<AssignmentSubmission> submissions) {
         this.AssignmentSubmissions = submissions;
     }
 
-    public void addSubmission(AssignmentSubmisson submission) {
+    public void addSubmission(AssignmentSubmission submission) {
         this.AssignmentSubmissions.add(submission);
         submission.setStudent(this);
     }

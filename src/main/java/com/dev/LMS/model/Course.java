@@ -78,6 +78,13 @@ public class Course {
     public void setQuestions(List<Question> questions) {
         this.questions = questions;
     }
+    public void addQuestion(Question question){
+        this.questions.add(question);
+        question.setCourse(this);
+    } public void addQuiz(Quiz quiz){
+        this.quizzes.add(quiz);
+        quiz.setCourse(this);
+    }
 
     public Course() {}
 

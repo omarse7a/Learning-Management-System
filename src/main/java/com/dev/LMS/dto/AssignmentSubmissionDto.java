@@ -1,6 +1,6 @@
 package com.dev.LMS.dto;
 
-import com.dev.LMS.model.AssignmentSubmisson;
+import com.dev.LMS.model.AssignmentSubmission;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -17,7 +17,7 @@ public class AssignmentSubmissionDto {
     private boolean isGraded;
     private LocalDateTime submissionDate;
 
-    public AssignmentSubmissionDto(AssignmentSubmisson sub){
+    public AssignmentSubmissionDto(AssignmentSubmission sub){
         submissionId = sub.getSubmissionId();
         assignmentTitle = sub.getAssignment().getTitle();
         studentId = sub.getStudent().getId();

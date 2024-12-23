@@ -13,6 +13,7 @@ import com.dev.LMS.dto.LessonResourceDto;
 import com.dev.LMS.dto.StudentDto;
 import com.dev.LMS.model.*;
 import com.dev.LMS.repository.CourseRepository;
+import com.dev.LMS.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -168,6 +169,7 @@ public class CourseService {
             throw new IllegalStateException("You are already enrolled in this course");
         course.addStudent(student);
         courseRepository.save(course);
+        userRepository.save(student);
         Set<Course> enrolledCourses = student.getEnrolled_courses();
         Set<CourseDto> enrolledCoursesDto = new HashSet<>();
         for (Course c : enrolledCourses) {

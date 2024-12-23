@@ -1,14 +1,16 @@
 package com.dev.LMS.controller;
 
-
 import com.dev.LMS.dto.AssignmentDto;
 import com.dev.LMS.dto.AssignmentSubmissionDto;
+import com.dev.LMS.dto.QuestionDto;
+import com.dev.LMS.dto.QuizDto;
 import com.dev.LMS.exception.CourseNotFoundException;
 import com.dev.LMS.model.*;
 import com.dev.LMS.service.AssessmentService;
 import com.dev.LMS.service.CourseService;
 import com.dev.LMS.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+import org.springframework.context.ApplicationContextException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,37 +19,34 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
+@AllArgsConstructor
 @RestController
 @Controller
-@RequestMapping("/course/{course-name}")
+@RequestMapping("/course/{courseName}")
 public class AssessmentController {
 
-    @Autowired
-    AssessmentService assessmentService;
-    @Autowired
+    AssessmentService assessmentService ;
     UserService userService;
-    @Autowired
     CourseService courseService;
-    @PostMapping("/create-question")
-    public ResponseEntity<?> addQuestion(@PathVariable("course-name") String courseName,
+    @PostMapping("/create-question") //tested
+    public ResponseEntity<?> addQuestion(@PathVariable("courseName") String courseName,
                                          @RequestBody Question question)
     {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        User user = userService.getUserByEmail(email);
-        if (user == null) {
-            return ResponseEntity.badRequest().body("User not found, Please register or login first");
-        }
-        if (!(user  instanceof Instructor)) {
-            return ResponseEntity.status(403).body("You are not authorized to create an assignment");
-        }
-        Instructor instructor = (Instructor) user;
         try {
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userService.getUserByEmail(email);
+            if (user == null) {
+                return ResponseEntity.badRequest().body("User not found, Please register or login first");
+            }
+            if (!(user  instanceof Instructor)) {
+                return ResponseEntity.status(405).body("You are not authorized to create an assignment");
+            }
+            Instructor instructor = (Instructor) user;
             System.out.println(question);
             assessmentService.createQuestion(courseName,question);
             return new ResponseEntity<>(HttpStatus.CREATED);
@@ -56,8 +55,8 @@ public class AssessmentController {
             return new ResponseEntity<>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    @PostMapping("/create-quiz")
-    public ResponseEntity<?> createQuiz(@PathVariable("course-name") String courseName,
+    @PostMapping("/create-quiz") //tested
+    public ResponseEntity<?> createQuiz(@PathVariable("courseName") String courseName,
                                         @RequestBody Quiz quiz)
     {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -69,7 +68,6 @@ public class AssessmentController {
         if (!(user  instanceof Instructor)) {
             return ResponseEntity.status(403).body("You are not authorized to create an assignment");
         }
-        Instructor instructor = (Instructor) user;
         try {
             System.out.println(quiz);
             assessmentService.createQuiz(courseName,quiz);
@@ -79,21 +77,38 @@ public class AssessmentController {
             return new ResponseEntity<>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    @GetMapping("/get-questions")
-    public ResponseEntity<?> getQuestions(@PathVariable("course-name") String courseName){
+    @GetMapping("/get-questions") //tested
+    public ResponseEntity<?> getQuestions(@PathVariable("courseName") String courseName){
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
+        User user = userService.getUserByEmail(email);
+        if (user == null) {
+            return ResponseEntity.badRequest().body("User not found, Please register or login first");
+        }
+        if (!(user  instanceof Instructor)) {
+            return ResponseEntity.status(403).body("You are not authorized to create an assignment");
+        }
         try {
-            assessmentService.getQuestions(courseName);
-            return new ResponseEntity<>(HttpStatus.CREATED);
+            List<QuestionDto> questions = assessmentService.getQuestions(courseName);
+            return  ResponseEntity.ok(questions);
         }
         catch(Exception e){
             return new ResponseEntity<>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
         }
-    } @GetMapping("/get-question-by-id")
-    public ResponseEntity<?> getQuestions(@PathVariable("course-name") String courseName,@RequestBody int questionId){
+    } @GetMapping("/get-question-by-id") //tested
+    public ResponseEntity<?> getQuestions(@PathVariable("courseName") String courseName, @RequestBody int questionId){
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User user = userService.getUserByEmail(email);
+        if (user == null) {
+            return ResponseEntity.badRequest().body("User not found, Please register or login first");
+        }
+        if (!(user  instanceof Instructor)) {
+            return ResponseEntity.status(403).body("You are not authorized to create an assignment");
+        }
         try {
-            assessmentService.getQuestionById(courseName,questionId);
-            return new ResponseEntity<>(HttpStatus.CREATED);
+           QuestionDto question =  assessmentService.getQuestionById(courseName,questionId);
+            return ResponseEntity.ok(question);
         }
         catch(Exception e){
             return new ResponseEntity<>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
@@ -101,7 +116,7 @@ public class AssessmentController {
     }
     @GetMapping("/take-quiz/{quizName}")
     public ResponseEntity<?> takeQuiz(
-            @PathVariable("course-name") String courseName,
+            @PathVariable("courseName") String courseName,
             @PathVariable("quizName") String quizName) {
 
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -114,7 +129,8 @@ public class AssessmentController {
         }
 
         try {
-            Quiz quiz = assessmentService.generateQuiz(courseName, quizName);
+            QuizDto quiz = assessmentService.generateQuiz(courseName, quizName);
+            System.out.println(quiz);
             return ResponseEntity.status(HttpStatus.CREATED).body(quiz);
         } catch (CourseNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
@@ -124,7 +140,7 @@ public class AssessmentController {
     }
     @PostMapping("/submit-quiz/{quizName}")
     public ResponseEntity<?> submitQuiz(
-            @PathVariable("course-name") String courseName,
+            @PathVariable("courseName") String courseName,
             @PathVariable("quizName") String quizName,@RequestBody QuizSubmission quizSubmission) {
 
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -133,10 +149,10 @@ public class AssessmentController {
             return ResponseEntity.badRequest().body("User not found. Please register or login first.");
         }
         if (!(user instanceof Student)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only students can take quizzes.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only students can submit quizzes.");
         }
         try {
-            assessmentService.submitQuiz(courseName, quizName,quizSubmission);
+            assessmentService.submitQuiz(courseName, quizName,quizSubmission,(Student) user);
             return ResponseEntity.status(HttpStatus.CREATED).body("submitted successfully");
         } catch (CourseNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
@@ -144,34 +160,54 @@ public class AssessmentController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
-
-
-    @PostMapping("/create-assignment")
-    public ResponseEntity<?> createAssignment(@PathVariable("course-name") String courseName,
-                                              @RequestBody Assignment assignment)
-    {
+    @GetMapping("/{quizName}/grade")
+   // getQuizGrade(String quizTitle,String courseName , Student user)
+    public ResponseEntity<?> getGrade(@PathVariable("courseName") String courseName , @PathVariable("quizName") String quizTitle){
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
         User user = userService.getUserByEmail(email);
         if (user == null) {
             return ResponseEntity.badRequest().body("User not found, Please register or login first");
         }
-        if (!(user  instanceof Instructor)) {
-            return ResponseEntity.status(403).body("You are not authorized to create an assignment");
+        if (!(user  instanceof Student)) {
+            return ResponseEntity.status(403).body("You are not authorized to get the grade");
         }
-        Instructor instructor = (Instructor) user;
-        // retrieving course
-        Course course = courseService.getCourse(courseName);
+        try {
+            int grade = assessmentService.getQuizGrade(quizTitle,courseName,(Student) user );
+            return  ResponseEntity.ok(grade);
+        }
+        catch(Exception e){
+            return new ResponseEntity<>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    @PostMapping("/create-assignment")
+    public ResponseEntity<?> createAssignment(@PathVariable("courseName") String courseName,
+                                              @RequestBody Assignment assignment)
+    {
+        try {
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userService.getUserByEmail(email);
+            if (user == null) {
+                return ResponseEntity.badRequest().body("User not found, Please register or login first");
+            }
+            if (!(user  instanceof Instructor)) {
+                return ResponseEntity.status(403).body("You are not authorized to create an assignment");
+            }
+            Instructor instructor = (Instructor) user;
+            // retrieving course
+            Course course = courseService.getCourse(courseName);
 
-        // returns true if the user is the instructor of this course
-        boolean created = assessmentService.addAssignment(course,assignment,instructor);
-        if(created){
-            return ResponseEntity.status(HttpStatus.CREATED).body("Assignment created successfully");
+            // returns true if the user is the instructor of this course
+            AssignmentDto response = assessmentService.addAssignment(course,assignment,instructor);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         }
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to add assignments to this course");
+
     }
 
     @GetMapping("/assignments") // "/view-assignments"
-    public ResponseEntity<?> viewAssignments(@PathVariable("course-name") String courseName)
+    public ResponseEntity<?> viewAssignments(@PathVariable("courseName") String courseName)
     {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userService.getUserByEmail(email);
@@ -180,19 +216,23 @@ public class AssessmentController {
         }
         // only instructor and student are authorized
         if (user instanceof Instructor || user instanceof Student) {
-            // retrieving course
-            Course course = courseService.getCourse(courseName);
-            // retrieve the assignments from the course
-            List<Assignment> assignments = course.getAssignments();
-            List<AssignmentDto> assignmentDtos = assessmentService.getAssignments(course, user);
-            // return assignments in response
-            return ResponseEntity.ok(Map.of("assignments", assignmentDtos));
+            try {
+                // retrieving course
+                Course course = courseService.getCourse(courseName);
+                // retrieve the assignments from the course
+                List<Assignment> assignments = course.getAssignments();
+                List<AssignmentDto> assignmentDtos = assessmentService.getAssignments(course, user);
+                // return assignments in response
+                return ResponseEntity.ok(Map.of("assignments", assignmentDtos));
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Unauthorized to view this course assignment list: " + e.getMessage());
+            }
         }
         return ResponseEntity.status(403).body("You are not authorized to view assignments.");
     }
 
     @GetMapping("/assignment/{assignment_id}/view")     // "/view-assignment/{id}"
-    public ResponseEntity<?> viewAssignment(@PathVariable("course-name") String courseName,
+    public ResponseEntity<?> viewAssignment(@PathVariable("courseName") String courseName,
                                             @PathVariable("assignment_id") int assignment_id)
     {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -202,21 +242,29 @@ public class AssessmentController {
         }
         // only instructor and student are authorized
         if (user instanceof Instructor || user instanceof Student) {
-            // retrieving course
-            Course course = courseService.getCourse(courseName);
-            // retrieve the assignments from the course
-            Assignment assignment = assessmentService.getAssignment(course, user, assignment_id);
-            if(assignment == null){
-                return ResponseEntity.status(404).body("Assignment not found");
+            try {
+                // retrieving course
+                Course course = courseService.getCourse(courseName);
+                // retrieve the assignments from the course
+                Assignment assignment = assessmentService.getAssignment(course, user, assignment_id);
+                if (assignment == null) {
+                    return ResponseEntity.status(404).body("Assignment not found");
+                }
+                // return the assignment in response
+                return ResponseEntity.ok(new AssignmentDto(assignment));
             }
-            // return the assignment in response
-            return ResponseEntity.ok(new AssignmentDto(assignment));
+            catch (ApplicationContextException e) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Unauthorized to view assignment: " + e.getMessage());
+            }
+            catch (IllegalStateException e) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            }
         }
         return ResponseEntity.status(403).body("You are not authorized to view assignments.");
     }
 
     @PostMapping("assignment/{assignment_id}/submit")   // "submit-assignment/{assignment_id}"
-    public ResponseEntity<?> submitAssignment(@PathVariable("course-name") String courseName,
+    public ResponseEntity<?> submitAssignment(@PathVariable("courseName") String courseName,
                                               @PathVariable("assignment_id") int assignmentId,
                                               @RequestParam("file") MultipartFile file)
     {
@@ -234,12 +282,23 @@ public class AssessmentController {
         Student student = (Student) user;
         Course course = courseService.getCourse(courseName);
         Assignment assignment = assessmentService.getAssignment(course, user, assignmentId);
-        String response = assessmentService.uploadSubmissionFile(file, assignment, student);
-        return ResponseEntity.ok(response);
+        try {
+            String response = assessmentService.uploadSubmissionFile(file, assignment, student);
+            return ResponseEntity.ok(response);
+        }
+        catch (ApplicationContextException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Unauthorized to submit assignment: " + e.getMessage());
+        }
+        catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+        catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
     }
 
-    @GetMapping("/assignment/{assignment_id}/submissions")
-    public ResponseEntity<?> getSubmissionsList(@PathVariable("course-name") String courseName,
+ 
+    public ResponseEntity<?> getSubmissionsList(@PathVariable("courseName") String courseName,
                                                 @PathVariable("assignment_id") int assignmentId)
     {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -247,17 +306,28 @@ public class AssessmentController {
         if(user == null){
             return ResponseEntity.badRequest().body("User not found, Please register or login first.");
         }
-        if(!(user instanceof Student)) {
-            return ResponseEntity.status(403).body("You are not authorized to submit assignments.");
+        if(!(user instanceof Instructor)) {
+            return ResponseEntity.status(403).body("You are not authorized to view students' submissions list.");
         }
-        Course course = courseService.getCourse(courseName);
-        Assignment assignment = assessmentService.getAssignment(course, user, assignmentId);
-        List<AssignmentSubmissionDto> submissionsDto = assessmentService.getSubmissions(assignment);
-        return ResponseEntity.ok(submissionsDto);
+        try {
+            Course course = courseService.getCourse(courseName);
+            Assignment assignment = assessmentService.getAssignment(course, user, assignmentId);
+            List<AssignmentSubmissionDto> submissionsDto = assessmentService.getSubmissions(assignment);
+            return ResponseEntity.ok(submissionsDto);
+        }
+        catch (ApplicationContextException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Unauthorized to view assignment submissions list: " + e.getMessage());
+        }
+        catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+        catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
     }
 
-    @GetMapping("/assignment/{assignment_id}/submission/{submission_id}")
-    public ResponseEntity<?> getAssignmentSubmission(@PathVariable("course-name") String courseName,
+
+    public ResponseEntity<?> getAssignmentSubmission(@PathVariable("courseName") String courseName,
                                                      @PathVariable("assignment_id") int assignmentId,
                                                      @PathVariable("submission_id") int submissionId)
     {
@@ -266,13 +336,86 @@ public class AssessmentController {
         if(user == null){
             return ResponseEntity.badRequest().body("User not found, Please register or login first.");
         }
-        if(!(user instanceof Student)) {
-            return ResponseEntity.status(403).body("You are not authorized to submit assignments.");
+        if(!(user instanceof Instructor)) {
+            return ResponseEntity.status(403).body("You are not authorized to view a students' submissions.");
         }
-        Course course = courseService.getCourse(courseName);
-        Assignment assignment = assessmentService.getAssignment(course, user, assignmentId);
-        byte[] submissionFile = assessmentService.downloadSubmissionFile(assignment, submissionId);
+        try {
+            Course course = courseService.getCourse(courseName);
+            Assignment assignment = assessmentService.getAssignment(course, user, assignmentId);
+            byte[] submissionFile = assessmentService.downloadSubmissionFile(assignment, submissionId);
 
-        return ResponseEntity.status(200).contentType(MediaType.APPLICATION_PDF).body(submissionFile);
+            return ResponseEntity.status(200).contentType(MediaType.APPLICATION_PDF).body(submissionFile);
+        }
+        catch (ApplicationContextException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Unauthorized to view assignment submissions: " + e.getMessage());
+        }
+        catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+        catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/assignment/{assignment_id}/submission/{submission_id}/grade")
+    public ResponseEntity<?> gradeAssignment(@PathVariable("course-name") String courseName,
+                                             @PathVariable("assignment_id") int assignmentId,
+                                             @PathVariable("submission_id") int submissionId,
+                                             @RequestBody Map<String, Integer> gradeMap)
+    {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userService.getUserByEmail(email);
+        if(user == null){
+            return ResponseEntity.badRequest().body("User not found, Please register or login first.");
+        }
+        if(!(user instanceof Instructor)) {
+            return ResponseEntity.status(403).body("You are not authorized to grade a students' submissions.");
+        }
+        try {
+            Course course = courseService.getCourse(courseName);
+            Assignment assignment = assessmentService.getAssignment(course, user, assignmentId);
+            AssignmentSubmission submission = assessmentService.getSubmission(assignment, submissionId);
+            AssignmentSubmissionDto gradedSubmission = assessmentService.setAssignmentGrade(submission, course, gradeMap);
+            return ResponseEntity.status(HttpStatus.CREATED).body(gradedSubmission);
+        }
+        catch (ApplicationContextException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Unauthorized to grade assignment submissions: " + e.getMessage());
+        }
+        catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+        catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/assignment/{assignment_id}/get-grade")
+    public ResponseEntity<?> getAssignmentGrade(@PathVariable("course-name") String courseName,
+                                             @PathVariable("assignment_id") int assignmentId,
+                                             @RequestBody Map<String, Integer> gradeMap)
+    {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userService.getUserByEmail(email);
+        if(user == null){
+            return ResponseEntity.badRequest().body("User not found, Please register or login first.");
+        }
+        if(!(user instanceof Student)) {
+            return ResponseEntity.status(403).body("You are not authorized to view a submission's grade.");
+        }
+        try {
+            Student student = (Student) user;
+            Course course = courseService.getCourse(courseName);
+            Assignment assignment = assessmentService.getAssignment(course, user, assignmentId);
+            int grade = assessmentService.getAssignmentGrade(assignment, student);
+            Map<String, Integer> response = new HashMap<>();
+            response.put("grade", grade);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        }
+        catch (ApplicationContextException | IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+        catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
     }
 }

@@ -59,7 +59,7 @@ public class Question {
 
 
     public QuestionType getType() {
-        return type;
+        return this.type;
     }
 
     public void setType(QuestionType type) {
@@ -67,7 +67,7 @@ public class Question {
     }
 
     public String getContent() {
-        return content;
+        return this.content;
     }
 
     public void setContent(String content) {
@@ -75,7 +75,7 @@ public class Question {
     }
 
     public Long getId() {
-        return id;
+        return this.id;
     }
 
     public void setId(Long id) {
@@ -83,7 +83,7 @@ public class Question {
     }
 
     public List<Choice> getChoices() {
-        return choices;
+        return this.choices;
     }
 
     public void setChoices(List<Choice> choices) {
@@ -91,7 +91,7 @@ public class Question {
     }
 
     public String getCorrectAnswer() {
-        return correctAnswer;
+        return this.correctAnswer;
     }
 
     public void setCorrectAnswer(String correctAnswer) {
@@ -99,7 +99,7 @@ public class Question {
     }
 
     public Course getCourse() {
-        return course;
+        return this.course;
     }
 
     public void setCourse(Course course) {
@@ -108,7 +108,7 @@ public class Question {
 
 
     public List<SubmittedQuestion> getSubmittedQuestions() {
-        return submittedQuestions;
+        return this.submittedQuestions;
     }
 
     public void setSubmittedQuestions(List<SubmittedQuestion> submittedQuestions) {
@@ -116,7 +116,7 @@ public class Question {
     }
 
     public List<QuizSubmission> getSubmissions() {
-        return submissions;
+        return this.submissions;
     }
 
     public void setSubmissions(List<QuizSubmission> submissions) {
