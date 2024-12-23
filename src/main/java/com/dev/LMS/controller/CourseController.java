@@ -281,7 +281,7 @@ public class CourseController
 
     }
 
-    @PostMapping("course/{courseName}/enroll")
+    @PostMapping("/course/{courseName}/enroll")
     public ResponseEntity<?> enrollCourse(@PathVariable("courseName") String courseName){
        try {
            String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -297,7 +297,7 @@ public class CourseController
 
     }
 
-    @GetMapping("course/{courseName}/enrolled")
+    @GetMapping("/course/{courseName}/enrolled")
     public ResponseEntity<?> getEnrolledStudents(@PathVariable("courseName") String courseName){
         try{
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -313,7 +313,7 @@ public class CourseController
         }
     }
 
-    @DeleteMapping("course/{courseName}/remove-student/{studentId}")
+    @DeleteMapping("/course/{courseName}/remove-student/{studentId}")
     public ResponseEntity<?> removeEnrolledStd(@PathVariable("courseName") String courseName, @PathVariable("studentId") int studentId)
     {
         try{
@@ -340,7 +340,7 @@ public class CourseController
         }
     }
 
-    @PostMapping("course/{courseName}/lessons/{lessonId}/generate-OTP")
+    @PostMapping("/course/{courseName}/lessons/{lessonId}/generate-OTP")
     public ResponseEntity<?> generateOTP(@PathVariable("courseName") String courseName,@PathVariable int lessonId,@RequestParam("duration") int duration){
         try{
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -374,7 +374,7 @@ public class CourseController
     }
 
 
-    @PostMapping("course/{courseName}/lessons/{lessonId}/attendLesson")
+    @PostMapping("/course/{courseName}/lessons/{lessonId}/attendLesson")
     public ResponseEntity<?> attendLesson(@PathVariable("courseName") String courseName,@PathVariable int lessonId,@RequestParam("otp") int otp)
     {
         try{
@@ -407,6 +407,25 @@ public class CourseController
 
     }
 
+    @GetMapping("/course/{courseName}/attended-lessons")
+    public ResponseEntity<?> getAttendedLessons(@PathVariable("courseName") String courseName, @PathVariable("lessonId") int lessonId){
+        try{
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userService.getUserByEmail(email);
+
+            if (user == null) return ResponseEntity.badRequest().body("User not found, Please register or login first");
+            if (! (user instanceof Student)) return ResponseEntity.badRequest().build();
+
+            Student student = (Student) user;
+            Course course = courseService.getCourse(courseName);
+            if (course == null) return ResponseEntity.badRequest().body("Course not found");
+            Set <LessonDto>lessondto = courseService.getLessonAttended(course, lessonId, student);
+            return ResponseEntity.ok(lessondto);
+        }
+        catch (Exception e){
+            return ResponseEntity.badRequest().body("An error occurred" + e.getMessage());
+        }
+    }
 
 
 

@@ -242,4 +242,15 @@ public class CourseService {
             throw new IllegalStateException("Incorrect OTP");
         }
     }
+
+    public Set<LessonDto> getLessonAttended(Course course, int lessonId, Student student) {
+        Set<Lesson> lessons =  student.getLessonAttended();
+        Set<LessonDto> lessonDtos = new HashSet<>();
+        for (Lesson lesson : lessons) {
+            if (lesson.getCourse().getCourseId() == course.getCourseId()) {
+                lessonDtos.add(new LessonDto(lesson));
+            }
+        }
+        return lessonDtos;
+    }
 }
