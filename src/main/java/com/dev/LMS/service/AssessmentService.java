@@ -3,6 +3,7 @@ package com.dev.LMS.service;
 import com.dev.LMS.dto.*;
 import com.dev.LMS.model.*;
 import com.dev.LMS.repository.CourseRepository;
+import com.dev.LMS.repository.QuizSubmissionRepositry;
 import com.dev.LMS.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.context.ApplicationContextException;
@@ -19,6 +20,7 @@ import java.util.*;
 public class AssessmentService {
     private CourseRepository courseRepository;
     private UserRepository userRepository;
+    private QuizSubmissionRepositry quizSubmissionRepositry;
     private final String UPLOAD_DIR = "../../../../../resources/uploads/assignment-submissions/";
     public void createQuestion(String courseName , Question question ){
         Course course = courseRepository.findByName(courseName)
@@ -89,7 +91,7 @@ public class AssessmentService {
         List<Question> selectedQuestions = allQuestions.subList(0, Math.min(2, allQuestions.size()));
         QuizSubmission quizSubmission = new QuizSubmission();
         quizSubmission.setQuestions(selectedQuestions);
-        for(Question q:selectedQuestions){
+        for(Question q: quizSubmission.getQuestions()){
             q.addSubmission(quizSubmission);
         }
         quizSubmission.setSubmittedQuestions(new ArrayList<>());
@@ -99,15 +101,15 @@ public class AssessmentService {
         quizSubmission.setQuiz(currentQuiz);
         currentQuiz.addQuizSubmission(quizSubmission);
         course.setQuiz(currentQuiz);
-
+        quizSubmissionRepositry.save(quizSubmission);
         courseRepository.save(course);
-        System.out.println(QuestionDto.listToDto(student.getQuizSubmissions().get(0).getQuestions())+"\n\n\n\n\n\n\n\n\n");
+        System.out.println(QuestionDto.listToDto(course.getQuizzes().getFirst().getSubmissions().getFirst().getQuestions())+"\n\n\n\n\n\n\n\n\n");
         return QuizSubmissionDto.toDto(quizSubmission);
     }
     public void submitQuiz(String courseName, String quizTitle,List<SubmittedQuestion> studentSubmittedQuestions,Student student){
-        System.out.println(QuestionDto.listToDto(student.getQuizSubmissions().get(0).getQuestions())+"\n\n\n\n\n\n\n\n\n");
         Course course = courseRepository.findByName(courseName)
                 .orElseThrow(() -> new IllegalArgumentException("Course not found: " + courseName));
+        System.out.println(QuestionDto.listToDto(course.getQuizzes().getFirst().getSubmissions().getFirst().getQuestions())+"\n\n\n\n\n\n\n\n\n");
         List<Quiz> quizzes = course.getQuizzes();
         if(quizzes.isEmpty())
             throw new IllegalStateException("No quizzes available for "+courseName+" course");
