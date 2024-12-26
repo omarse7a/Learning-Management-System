@@ -36,12 +36,6 @@ public class SecurityConfig {
                 // .requestMatchers("/admin/**").hasRole("ADMIN")
                 // .requestMatchers("/instructor/**").hasAnyRole("INSTRUCTOR", "ADMIN")
                 // .requestMatchers("/student/**").hasRole("STUDENT")
-                .requestMatchers("/course/{course-name}/create-assignment").hasRole("INSTRUCTOR")
-                .requestMatchers("/course/{course-name}/assignments").hasAnyRole("STUDENT", "INSTRUCTOR")
-                .requestMatchers("/course/{course-name}/assignment/{assignment_id}/view").hasAnyRole("STUDENT", "INSTRUCTOR")
-                .requestMatchers("/course/{course-name}/assignment/{assignment_id}/submit").hasRole("STUDENT")
-                .requestMatchers("/course/{course-name}/assignment/{assignment_id}/submission/{submission_id}").hasRole("INSTRUCTOR")
-                .requestMatchers("/course/{course-name}/assignment/{assignment_id}/submissions").hasRole("INSTRUCTOR")
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> 
