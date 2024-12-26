@@ -1,8 +1,10 @@
 package com.dev.LMS.service;
 
 
+import com.dev.LMS.model.Course;
 import com.dev.LMS.model.Instructor;
 import com.dev.LMS.model.Student;
+import com.dev.LMS.model.User;
 import jakarta.mail.internet.MimeMessage;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -83,6 +85,70 @@ public class EmailService {
                     .replace("${instructorName}", instructorName);
             helper.setTo(studentEmail);
             helper.setSubject("OTP For Attending:"+ lessonTitle);
+            helper.setText(html, true);
+            mailSender.send(mimeMessage);
+            return true;
+
+        }catch (Exception e){
+            throw new RuntimeException(e.getMessage());
+        }
+
+    }
+
+    public Boolean sendEmail(String studentEmail, String studentName, String subject, String content, String instructorName) {
+        try{
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage,true);
+            String html = """
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <style>
+                            body {
+                                font-family: Arial, sans-serif;
+                                line-height: 1.6;
+                            }
+                            .container {
+                                max-width: 600px;
+                                margin: 0 auto;
+                                padding: 20px;
+                                border: 1px solid #ddd;
+                                border-radius: 8px;
+                                background-color: #f9f9f9;
+                            }
+                            .header {
+                                font-size: 18px;
+                                font-weight: bold;
+                                margin-bottom: 20px;
+                            }
+                            .footer {
+                                font-size: 12px;
+                                color: #888;
+                                margin-top: 20px;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <p>Dear <strong>${studentName}</strong>,</p>
+                            <p>We are pleased to provide you with updates: <strong>${subject}</strong>.</p>
+   
+                            <p>${content}</p>
+                             
+                            <p>Thank you,<br>
+                            ${instructorName}</p>
+                            <div class="footer">If you have any questions, please contact us.</div>
+                        </div>
+                    </body>
+                    </html>
+                    
+                    """;
+            html = html.replace("${studentName}", studentName)
+                    .replace("${subject}", subject)
+                    .replace("${content}", content)
+                    .replace("${instructorName}", instructorName);
+            helper.setTo(studentEmail);
+            helper.setSubject(subject);
             helper.setText(html, true);
             mailSender.send(mimeMessage);
             return true;

@@ -22,6 +22,7 @@ public class AssessmentService {
     private UserRepository userRepository;
     private QuizSubmissionRepositry quizSubmissionRepositry;
     private NotificationService notificationService;
+    private EmailService emailService;
     @Value("${file.upload.base-path.assignment-submissions}")
     private String UPLOAD_DIR;
 
@@ -30,6 +31,7 @@ public class AssessmentService {
         this.userRepository = userRepository;
         this.quizSubmissionRepositry = quizSubmissionRepositry;
         this.notificationService = new NotificationService();
+        this.emailService = new EmailService();
     }
 
     public void createQuestion(String courseName , Question question ){
@@ -72,8 +74,17 @@ public class AssessmentService {
 
         Notification notificationMessage = notificationService.createNotification("A new quiz " + newQuiz.getQuizTitle() + " was added to your course work" );
         Set<Student> enrolled_students = course.getEnrolled_students();
+        String subject = "New Quiz was added";
+        String content = "A new quiz added " + newQuiz.getQuizTitle() + "in Course: " + course.getName();
         for (Student student : enrolled_students) {
             notificationService.addNotifcationStudent(notificationMessage, student);
+            emailService.sendEmail(
+                    student.getEmail(),
+                    student.getName(),
+                    subject,
+                    content,
+                    course.getInstructor().getName()
+            );
         }
 
         courseRepository.save(course);
@@ -253,8 +264,17 @@ public class AssessmentService {
 
             Notification notificationMessage = notificationService.createNotification("A new assignment " + assignment.getTitle() + " was added to your course work" );
             Set<Student> enrolled_students = course.getEnrolled_students();
+            String subject = "New Assignment was added";
+            String content = "A new assignment added " + assignment.getTitle() + "in Course: " + course.getName();
             for (Student student : enrolled_students) {
                 notificationService.addNotifcationStudent(notificationMessage, student);
+                emailService.sendEmail(
+                        student.getEmail(),
+                        student.getName(),
+                        subject,
+                        content,
+                        course.getInstructor().getName()
+                );
             }
 
             courseRepository.save(course);
@@ -378,9 +398,21 @@ public class AssessmentService {
         a.setGrade(gradeMap.get("grade"));
         a.setGraded(true);
 
-        Notification notificationMessage = notificationService.createNotification("Your submission to " + a.getAssignment().getTitle() + " got graded. check it out." );
+        Notification notificationMessage = notificationService.createNotification("Your submission to " + a.getAssignment().getTitle() + " got graded " + " in Course: " + course.getName());
         Student student = a.getStudent();
         notificationService.addNotifcationStudent(notificationMessage, student);
+
+        String subject = "Assignment got Graded";
+        String content = "Your submission to " + a.getAssignment().getTitle() + " got graded " + " in Course: " + course.getName();
+
+        emailService.sendEmail(
+                student.getEmail(),
+                student.getName(),
+                subject,
+                content,
+                course.getInstructor().getName()
+        );
+
 
         courseRepository.save(course);
         return new AssignmentSubmissionDto(a);

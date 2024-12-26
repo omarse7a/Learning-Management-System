@@ -71,8 +71,19 @@ public class CourseService {
         course.addLesson(lesson);
         Notification notificationMessage = notificationService.createNotification("New Lesson Added By Instructor: " + course.getInstructor().getName());
         Set<Student> enrolledStudent = course.getEnrolled_students();
+
+        String subject = "New Lesson";
+        String content = "A new lesson added " + lesson.getTitle() + "in Course: " + course.getName();
+
         for (Student s : enrolledStudent) {
             notificationService.addNotifcationStudent(notificationMessage, s);
+            emailService.sendEmail(
+                    s.getEmail(),
+                    s.getName(),
+                    subject,
+                    content,
+                    course.getInstructor().getName()
+            );
         }
         courseRepository.save(course);
         return course.getLessons().getLast();
@@ -177,9 +188,23 @@ public class CourseService {
             throw new IllegalStateException("You are already enrolled in this course");
         course.addStudent(student);
 
-        Notification notificationMessage = notificationService.createNotification("Student:" +student.getName() + " Enrolled in Course: " + courseName);
         Instructor instructor = course.getInstructor();
-        notificationService.addNotificationInstructor(notificationMessage, instructor);
+        Notification notificationMessage1 = notificationService.createNotification("You have successfully enrolled in Course: " + courseName);
+        notificationService.addNotifcationStudent(notificationMessage1, student);
+        String subject = "Enrollment Confirmation";
+        String content = "You have successfully enrolled in Course: " + courseName;
+        emailService.sendEmail(
+                student.getEmail(),
+                student.getName(),
+                subject,
+                content,
+                instructor.getName()
+        );
+
+
+        Notification notificationMessage2 = notificationService.createNotification("Student:" +student.getName() + " Enrolled in Course: " + courseName);
+
+        notificationService.addNotificationInstructor(notificationMessage2, instructor);
 
         courseRepository.save(course);
         Set<Course> enrolledCourses = student.getEnrolled_courses();
