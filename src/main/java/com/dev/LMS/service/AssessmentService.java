@@ -6,6 +6,7 @@ import com.dev.LMS.repository.CourseRepository;
 import com.dev.LMS.repository.QuizSubmissionRepositry;
 import com.dev.LMS.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,13 +16,22 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
 
-@AllArgsConstructor
 @Service
 public class AssessmentService {
     private CourseRepository courseRepository;
     private UserRepository userRepository;
     private QuizSubmissionRepositry quizSubmissionRepositry;
-    private final String UPLOAD_DIR = "../../../../../resources/uploads/assignment-submissions/";
+    private NotificationService notificationService;
+    @Value("${file.upload.base-path.assignment-submissions}")
+    private String UPLOAD_DIR;
+
+    AssessmentService(CourseRepository courseRepository, UserRepository userRepository, QuizSubmissionRepositry quizSubmissionRepositry){
+        this.courseRepository = courseRepository;
+        this.userRepository = userRepository;
+        this.quizSubmissionRepositry = quizSubmissionRepositry;
+        this.notificationService = new NotificationService();
+    }
+
     public void createQuestion(String courseName , Question question ){
         Course course = courseRepository.findByName(courseName)
                 .orElseThrow(() -> new IllegalArgumentException("Course not found: " + courseName));
@@ -59,6 +69,13 @@ public class AssessmentService {
         Course course = courseRepository.findByName(courseName)
                 .orElseThrow(() -> new IllegalArgumentException("Course not found: " + courseName));
         course.addQuiz(newQuiz);
+
+        Notification notificationMessage = notificationService.createNotification("A new quiz " + newQuiz.getQuizTitle() + " was added to your course work" );
+        Set<Student> enrolled_students = course.getEnrolled_students();
+        for (Student student : enrolled_students) {
+            notificationService.addNotifcationStudent(notificationMessage, student);
+        }
+
         courseRepository.save(course);
     }
     // change parameter Course-> CourseId
@@ -233,6 +250,13 @@ public class AssessmentService {
         Set<Course> instructorCourses = instructor.getCreatedCourses();
         if(instructorCourses.contains(course)){
             course.addAssignment(assignment);
+
+            Notification notificationMessage = notificationService.createNotification("A new assignment " + assignment.getTitle() + " was added to your course work" );
+            Set<Student> enrolled_students = course.getEnrolled_students();
+            for (Student student : enrolled_students) {
+                notificationService.addNotifcationStudent(notificationMessage, student);
+            }
+
             courseRepository.save(course);
             return new AssignmentDto(assignment);
         }
@@ -288,7 +312,7 @@ public class AssessmentService {
     }
 
     public String uploadSubmissionFile(MultipartFile file, Assignment assignment, Student student){
-        String filePath = UPLOAD_DIR + "/" + file.getOriginalFilename();
+        String filePath = UPLOAD_DIR + file.getOriginalFilename();
 
         // database part
         AssignmentSubmission a = new AssignmentSubmission();
@@ -306,7 +330,7 @@ public class AssessmentService {
         try {
             file.transferTo(new File(filePath));
         } catch (IOException e) {
-            throw new RuntimeException("Unable to store the file");
+            throw new RuntimeException("Unable to store the file at " + filePath);
         }
         return "file successfully uploaded to " + filePath;
     }
@@ -346,13 +370,18 @@ public class AssessmentService {
             byte[] submissionData = Files.readAllBytes(new File(filePath).toPath());
             return submissionData;
         } catch (IOException e) {
-            throw new RuntimeException("Unable to load the file");
+            throw new RuntimeException("Unable to load the file from " + filePath);
         }
     }
 
     public AssignmentSubmissionDto setAssignmentGrade(AssignmentSubmission a, Course course, Map<String, Integer> gradeMap) {
         a.setGrade(gradeMap.get("grade"));
         a.setGraded(true);
+
+        Notification notificationMessage = notificationService.createNotification("Your submission to " + a.getAssignment().getTitle() + " got graded. check it out." );
+        Student student = a.getStudent();
+        notificationService.addNotifcationStudent(notificationMessage, student);
+
         courseRepository.save(course);
         return new AssignmentSubmissionDto(a);
     }

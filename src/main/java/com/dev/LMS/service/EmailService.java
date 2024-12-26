@@ -74,7 +74,7 @@ public class EmailService {
                     </html>
                     
                     """;
-            html = html = html.replace("${studentName}", studentName)
+            html = html.replace("${studentName}", studentName)
                     .replace("${courseName}", courseName)
                     .replace("${lessonTitle}", lessonTitle)
                     .replace("${description}", description)
