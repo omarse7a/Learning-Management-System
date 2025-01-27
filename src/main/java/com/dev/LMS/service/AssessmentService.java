@@ -26,12 +26,12 @@ public class AssessmentService {
     @Value("${file.upload.base-path.assignment-submissions}")
     private String UPLOAD_DIR;
 
-    AssessmentService(CourseRepository courseRepository, UserRepository userRepository, QuizSubmissionRepositry quizSubmissionRepositry){
+    AssessmentService(CourseRepository courseRepository, UserRepository userRepository, QuizSubmissionRepositry quizSubmissionRepositry, NotificationService NotificationService, EmailService EmailService){
         this.courseRepository = courseRepository;
         this.userRepository = userRepository;
         this.quizSubmissionRepositry = quizSubmissionRepositry;
-        this.notificationService = new NotificationService();
-        this.emailService = new EmailService();
+        this.notificationService =  NotificationService;
+        this.emailService = EmailService;
     }
 
     public void createQuestion(String courseName , Question question ){
@@ -430,8 +430,5 @@ public class AssessmentService {
         throw new IllegalStateException("You have no submissions for this assignment .");
     }
 
-    public String send_feedback(Student student) {
-        return "11";
-    }
 }
 
